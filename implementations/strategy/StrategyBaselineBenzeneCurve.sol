@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../../interfaces/flamincome/Controller.sol";
 import "../../interfaces/flamincome/Vault.sol";
 import "../../interfaces/external/Curve.sol";
+import "../../interfaces/external/YFI.sol";
 
 import "./StrategyBaselineBenzene.sol";
 
@@ -72,6 +73,6 @@ contract StrategyBaselineBenzeneCurve is StrategyBaselineBenzene {
     }
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {
-        return Curve(curve).get_virtual_price().mul(1e18).div(Vault(want).priceE18());
+        return Curve(curve).get_virtual_price().mul(1e18).div(YFIVault(want).getPricePerFullShare());
     }
 }
