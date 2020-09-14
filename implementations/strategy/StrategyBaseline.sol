@@ -47,6 +47,7 @@ contract StrategyBaseline {
         require(msg.sender == controller, "!controller");
         address vault = Controller(controller).vaults(address(want));
         require(vault != address(0), "!vault");
+        balance = IERC20(want).balanceOf(address(this));
         IERC20(want).safeTransfer(vault, balance);
     }
 

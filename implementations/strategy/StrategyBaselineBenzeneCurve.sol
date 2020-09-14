@@ -72,8 +72,6 @@ contract StrategyBaselineBenzeneCurve is StrategyBaselineBenzene {
     }
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {
-        // TODO
-        require(false, "!impl");
-        return Vault(recv).priceE18();
+        return Curve(curve).get_virtual_price().mul(1e18).div(Vault(want).priceE18());
     }
 }
