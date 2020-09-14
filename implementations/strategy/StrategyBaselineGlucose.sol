@@ -16,8 +16,8 @@ contract StrategyBaselineGlucose is StrategyBaseline {
     using Address for address;
     using SafeMath for uint256;
 
-    uint public feen = 5e15;
-    uint constant public feed = 1e18;
+    uint256 public feen = 5e15;
+    uint256 public constant feed = 1e18;
 
     constructor(address _want, address _controller)
         public
@@ -28,10 +28,15 @@ contract StrategyBaselineGlucose is StrategyBaseline {
         require(msg.sender == controller, "!controller");
         address vault = Controller(controller).vaults(address(want));
         require(vault != address(0), "!vault");
-        uint _fee = _amount.mul(feen).div(feed);
+        uint256 _fee = _amount.mul(feen).div(feed);
         IERC20(want).safeTransfer(Controller(controller).rewards(), _fee);
         address _vault = Controller(controller).vaults(address(want));
         require(_vault != address(0), "!vault");
         IERC20(want).safeTransfer(_vault, _amount.sub(_fee));
+    }
+
+    function setFeeN(uint256 _feen) external {
+        require(msg.sender == governance, "!governance");
+        feen = _feen;
     }
 }
