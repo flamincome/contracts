@@ -25,7 +25,7 @@ contract StrategyBaselineBenzeneCurve is StrategyBaselineBenzene {
 
     constructor(int128 _index, address _controller)
         public
-        StrategyBaselineBenzene(Curve(curve).coins(_index), _controller)
+        StrategyBaselineBenzene(ICurveFi(curve).coins(_index), _controller)
     {
         index = _index;
     }
@@ -40,7 +40,7 @@ contract StrategyBaselineBenzeneCurve is StrategyBaselineBenzene {
             uint256(0)
         ];
         vec[uint256(index)] = _amount;
-        Curve(curve).add_liquidity(vec, 0);
+        ICurveFi(curve).add_liquidity(vec, 0);
     }
 
     function WithdrawToken(uint256 _amount) public override {
@@ -52,18 +52,18 @@ contract StrategyBaselineBenzeneCurve is StrategyBaselineBenzene {
             uint256(0),
             uint256(0)
         ];
-        Curve(curve).remove_liquidity(_amount, vec);
+        ICurveFi(curve).remove_liquidity(_amount, vec);
 
         for (int128 i = 0; i < 4; i++) {
             if (i == index) {
                 continue;
             }
-            address erc20 = Curve(curve).coins(i);
+            address erc20 = ICurveFi(curve).coins(i);
             uint256 _bal = IERC20(erc20).balanceOf(address(this));
             if (_bal > 0) {
                 IERC20(erc20).safeApprove(curve, 0);
                 IERC20(erc20).safeApprove(curve, _bal);
-                Curve(curve).exchange(i, index, _bal, 0);
+                ICurveFi(curve).exchange(i, index, _bal, 0);
             }
         }
     }
@@ -74,7 +74,7 @@ contract StrategyBaselineBenzeneCurve is StrategyBaselineBenzene {
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {
         return
-            Curve(curve).get_virtual_price().mul(1e18).div(
+            ICurveFi(curve).get_virtual_price().mul(1e18).div(
                 YFIVault(want).getPricePerFullShare()
             );
     }

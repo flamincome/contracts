@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../../interfaces/flamincome/Controller.sol";
-import "../../interfaces/external/yVault.sol";
+import "../../interfaces/external/YFI.sol";
 import "../../interfaces/external/Curve.sol";
 
 contract StrategyDAICurve {
@@ -51,19 +51,19 @@ contract StrategyDAICurve {
         if (_want > 0) {
             IERC20(want).safeApprove(y, 0);
             IERC20(want).safeApprove(y, _want);
-            yERC20(y).deposit(_want);
+            YFIVault(y).deposit(_want);
         }
         uint _y = IERC20(y).balanceOf(address(this));
         if (_y > 0) {
             IERC20(y).safeApprove(curve, 0);
             IERC20(y).safeApprove(curve, _y);
-            Curve(curve).add_liquidity([_y,0,0,0],0);
+            ICurveFi(curve).add_liquidity([_y,0,0,0],0);
         }
         uint _ycrv = IERC20(ycrv).balanceOf(address(this));
         if (_ycrv > 0) {
             IERC20(ycrv).safeApprove(yycrv, 0);
             IERC20(ycrv).safeApprove(yycrv, _ycrv);
-            yERC20(yycrv).deposit(_ycrv);
+            YFIVault(yycrv).deposit(_ycrv);
         }
     }
     
@@ -109,7 +109,7 @@ contract StrategyDAICurve {
     function withdrawUnderlying(uint256 _amount) internal returns (uint) {
         IERC20(ycrv).safeApprove(curve, 0);
         IERC20(ycrv).safeApprove(curve, _amount);
-        Curve(curve).remove_liquidity(_amount, [uint256(0),0,0,0]);
+        ICurveFi(curve).remove_liquidity(_amount, [uint256(0),0,0,0]);
     
         uint256 _yusdc = IERC20(yusdc).balanceOf(address(this));
         uint256 _yusdt = IERC20(yusdt).balanceOf(address(this));
@@ -118,21 +118,21 @@ contract StrategyDAICurve {
         if (_yusdc > 0) {
             IERC20(yusdc).safeApprove(curve, 0);
             IERC20(yusdc).safeApprove(curve, _yusdc);
-            Curve(curve).exchange(1, 0, _yusdc, 0);
+            ICurveFi(curve).exchange(1, 0, _yusdc, 0);
         }
         if (_yusdt > 0) {
             IERC20(yusdt).safeApprove(curve, 0);
             IERC20(yusdt).safeApprove(curve, _yusdt);
-            Curve(curve).exchange(2, 0, _yusdt, 0);
+            ICurveFi(curve).exchange(2, 0, _yusdt, 0);
         }
         if (_ytusd > 0) {
             IERC20(ytusd).safeApprove(curve, 0);
             IERC20(ytusd).safeApprove(curve, _ytusd);
-            Curve(curve).exchange(3, 0, _ytusd, 0);
+            ICurveFi(curve).exchange(3, 0, _ytusd, 0);
         }
         
         uint _before = IERC20(want).balanceOf(address(this));
-        yERC20(ydai).withdraw(IERC20(ydai).balanceOf(address(this)));
+        YFIVault(ydai).withdraw(IERC20(ydai).balanceOf(address(this)));
         uint _after = IERC20(want).balanceOf(address(this));
         
         return _after.sub(_before);
@@ -141,18 +141,18 @@ contract StrategyDAICurve {
     function _withdrawAll() internal {
         uint _yycrv = IERC20(yycrv).balanceOf(address(this));
         if (_yycrv > 0) {
-            yERC20(yycrv).withdraw(_yycrv);
+            YFIVault(yycrv).withdraw(_yycrv);
             withdrawUnderlying(IERC20(ycrv).balanceOf(address(this)));
         }
     }
     
     function _withdrawSome(uint256 _amount) internal returns (uint) {
         // calculate amount of ycrv to withdraw for amount of _want_
-        uint _ycrv = _amount.mul(1e18).div(Curve(curve).get_virtual_price());
+        uint _ycrv = _amount.mul(1e18).div(ICurveFi(curve).get_virtual_price());
         // calculate amount of yycrv to withdraw for amount of _ycrv_
-        uint _yycrv = _ycrv.mul(1e18).div(yERC20(yycrv).priceE18());
+        uint _yycrv = _ycrv.mul(1e18).div(YFIVault(yycrv).getPricePerFullShare());
         uint _before = IERC20(ycrv).balanceOf(address(this));
-        yERC20(yycrv).withdraw(_yycrv);
+        YFIVault(yycrv).withdraw(_yycrv);
         uint _after = IERC20(ycrv).balanceOf(address(this));
         return withdrawUnderlying(_after.sub(_before));
     }
@@ -166,11 +166,11 @@ contract StrategyDAICurve {
     }
     
     function balanceOfYYCRVinYCRV() public view returns (uint) {
-        return balanceOfYYCRV().mul(yERC20(yycrv).priceE18()).div(1e18);
+        return balanceOfYYCRV().mul(YFIVault(yycrv).getPricePerFullShare()).div(1e18);
     }
     
     function balanceOfYYCRVinyTUSD() public view returns (uint) {
-        return balanceOfYYCRVinYCRV().mul(Curve(curve).get_virtual_price()).div(1e18);
+        return balanceOfYYCRVinYCRV().mul(ICurveFi(curve).get_virtual_price()).div(1e18);
     }
     
     function balanceOfYCRV() public view returns (uint) {
@@ -178,7 +178,7 @@ contract StrategyDAICurve {
     }
     
     function balanceOfYCRVyTUSD() public view returns (uint) {
-        return balanceOfYCRV().mul(Curve(curve).get_virtual_price()).div(1e18);
+        return balanceOfYCRV().mul(ICurveFi(curve).get_virtual_price()).div(1e18);
     }
     
     function balanceOf() public view returns (uint) {
