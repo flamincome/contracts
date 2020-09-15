@@ -42,17 +42,21 @@ contract StrategyBaseline {
         if (_balance < _amount) {
             _amount = _balance;
         }
-        address vault = Controller(controller).vaults(address(want));
-        require(vault != address(0), "!vault");
-        IERC20(want).safeTransfer(vault, _amount);
+        if (_amount > 0) {
+            address vault = Controller(controller).vaults(address(want));
+            require(vault != address(0), "!vault");
+            IERC20(want).safeTransfer(vault, _amount);
+        }
     }
 
     function withdrawAll() external virtual returns (uint256 balance) {
         require(msg.sender == controller, "!controller");
-        address vault = Controller(controller).vaults(address(want));
-        require(vault != address(0), "!vault");
         balance = IERC20(want).balanceOf(address(this));
-        IERC20(want).safeTransfer(vault, balance);
+        if (balance > 0) {
+            address vault = Controller(controller).vaults(address(want));
+            require(vault != address(0), "!vault");
+            IERC20(want).safeTransfer(vault, balance);
+        }
     }
 
     function balanceOf() public virtual view returns (uint256) {
