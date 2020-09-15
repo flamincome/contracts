@@ -23,36 +23,57 @@ contract StrategyBaseline {
         want = _want;
     }
 
-    function deposit() public virtual {}
+    function DepositToken() public virtual {}
 
-    function withdraw(IERC20 _asset)
+    function WithdrawToken(uint256 _amount) public virtual {}
+
+    function WithdrawEx() public virtual {}
+
+    function CheckEx(address _asset) public virtual {}
+
+    function GetBalanceEx() public virtual pure returns (uint256) {
+        return 0;
+    }
+
+    function deposit() public virtual {
+        DepositToken();
+    }
+
+    function withdraw(address _asset)
         external
-        virtual
         returns (uint256 balance)
     {
         require(msg.sender == controller, "!controller");
         require(want != address(_asset), "want");
-        balance = _asset.balanceOf(address(this));
-        _asset.safeTransfer(controller, balance);
+        CheckEx(_asset);
+        balance = IERC20(_asset).balanceOf(address(this));
+        IERC20(_asset).safeTransfer(controller, balance);
     }
 
     function withdraw(uint256 _amount) external virtual {
         require(msg.sender == controller, "!controller");
+        uint256 _balance = IERC20(want).balanceOf(address(this));
+        if (_balance < _amount) {
+            WithdrawToken(_amount.sub(_balance));
+            _amount = IERC20(want).balanceOf(address(this));
+        }
         address vault = Controller(controller).vaults(address(want));
         require(vault != address(0), "!vault");
         IERC20(want).safeTransfer(vault, _amount);
     }
 
-    function withdrawAll() external virtual returns (uint256 balance) {
+    function withdrawAll() external returns (uint256 balance) {
         require(msg.sender == controller, "!controller");
         address vault = Controller(controller).vaults(address(want));
         require(vault != address(0), "!vault");
+        WithdrawEx();
         balance = IERC20(want).balanceOf(address(this));
         IERC20(want).safeTransfer(vault, balance);
     }
 
-    function balanceOf() public virtual view returns (uint256) {
-        return IERC20(want).balanceOf(address(this));
+    function balanceOf() public view returns (uint256) {
+        uint256 _want = IERC20(want).balanceOf(address(this));
+        return GetBalanceEx().add(_want);
     }
 
     function SetGovernance(address _governance) external {

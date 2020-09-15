@@ -16,8 +16,7 @@ contract NormalizerMethane is ERC20 {
     using SafeMath for uint256;
 
     IERC20 public token;
-    mapping(address => uint256) public f;
-    mapping(address => uint256) public n;
+    mapping(address => uint256) public fbalance;
     address public governance;
     uint256 public overfillE18;
 
@@ -40,30 +39,28 @@ contract NormalizerMethane is ERC20 {
     }
 
     function GetMaximumNToken(address _addr) public view returns (uint256) {
-        uint256 _val = f[_addr].mul(Vault(address(token)).priceE18());
+        uint256 _val = fbalance[_addr].mul(Vault(address(token)).priceE18());
         uint256 _over = _val.mul(overfillE18);
         return _val.sub(_over).div(1e18);
     }
 
     function DepositFToken(uint256 _amount) public {
+        fbalance[msg.sender] = fbalance[msg.sender].add(_amount);
         token.safeTransferFrom(msg.sender, address(this), _amount);
-        f[msg.sender] = f[msg.sender].add(_amount);
     }
 
     function WithdrawFToken(uint256 _amount) public {
-        f[msg.sender] = f[msg.sender].sub(_amount);
-        require(n[msg.sender] <= GetMaximumNToken(msg.sender));
+        fbalance[msg.sender] = fbalance[msg.sender].sub(_amount);
+        require(balanceOf(msg.sender) <= GetMaximumNToken(msg.sender));
         token.safeTransfer(msg.sender, _amount);
     }
 
     function MintNToken(uint256 _amount) public {
-        n[msg.sender] = n[msg.sender].add(_amount);
-        require(n[msg.sender] <= GetMaximumNToken(msg.sender));
+        require(balanceOf(msg.sender) <= GetMaximumNToken(msg.sender));
         _mint(msg.sender, _amount);
     }
 
     function BurnNToken(uint256 _amount) public {
-        n[msg.sender] = n[msg.sender].sub(_amount);
         _burn(msg.sender, _amount);
     }
 
