@@ -27,7 +27,7 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         recv = GetRecv();
         frecv = Controller(controller).vaults(recv);
         fwant = Controller(controller).vaults(want);
-        require(recv != address(0), "!fwant");
+        require(recv != address(0), "!recv");
         require(fwant != address(0), "!fwant");
         require(frecv != address(0), "!frecv");
     }
