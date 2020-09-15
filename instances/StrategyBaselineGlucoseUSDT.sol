@@ -3,7 +3,7 @@ pragma solidity ^0.6.2;
 
 import "../implementations/strategy/StrategyBaselineGlucose.sol";
 
-contract StrategyBaselineGlucoseUSDt is StrategyBaselineGlucose {
+contract StrategyBaselineGlucoseUSDT is StrategyBaselineGlucose {
     constructor()
         public
         StrategyBaselineGlucose(
