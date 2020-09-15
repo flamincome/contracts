@@ -33,6 +33,8 @@ contract StrategyBaselineBenzene is StrategyBaseline {
     }
 
     function DepositToken(uint256 _amount) public virtual {
+        IERC20(want).safeApprove(recv, 0);
+        IERC20(want).safeApprove(recv, _amount);
         Vault(recv).deposit(_amount);
     }
 
