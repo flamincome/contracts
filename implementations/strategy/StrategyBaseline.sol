@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
+import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -39,24 +40,18 @@ contract StrategyBaseline {
     function withdraw(uint256 _amount) external virtual {
         require(msg.sender == controller, "!controller");
         uint256 _balance = IERC20(want).balanceOf(address(this));
-        if (_balance < _amount) {
-            _amount = _balance;
-        }
-        if (_amount > 0) {
-            address vault = Controller(controller).vaults(address(want));
-            require(vault != address(0), "!vault");
-            IERC20(want).safeTransfer(vault, _amount);
-        }
+        _amount = Math.min(_balance, _amount);
+        address vault = Controller(controller).vaults(address(want));
+        require(vault != address(0), "!vault");
+        IERC20(want).safeTransfer(vault, _amount);
     }
 
     function withdrawAll() external virtual returns (uint256 balance) {
         require(msg.sender == controller, "!controller");
         balance = IERC20(want).balanceOf(address(this));
-        if (balance > 0) {
-            address vault = Controller(controller).vaults(address(want));
-            require(vault != address(0), "!vault");
-            IERC20(want).safeTransfer(vault, balance);
-        }
+        address vault = Controller(controller).vaults(address(want));
+        require(vault != address(0), "!vault");
+        IERC20(want).safeTransfer(vault, balance);
     }
 
     function balanceOf() public virtual view returns (uint256) {
