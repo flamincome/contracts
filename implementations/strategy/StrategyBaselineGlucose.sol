@@ -32,7 +32,12 @@ contract StrategyBaselineGlucose is StrategyBaseline {
         }
         if (_amount > 0) {
             uint256 _fee = _amount.mul(feen).div(feed);
-            IERC20(want).safeTransfer(Controller(controller).rewards(), _fee);
+            if (_fee > 0) {
+                IERC20(want).safeTransfer(
+                    Controller(controller).rewards(),
+                    _fee
+                );
+            }
             address _vault = Controller(controller).vaults(address(want));
             require(_vault != address(0), "!vault");
             IERC20(want).safeTransfer(_vault, _amount.sub(_fee));
