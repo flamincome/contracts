@@ -27,21 +27,12 @@ contract StrategyBaselineGlucose is StrategyBaseline {
     function withdraw(uint256 _amount) external override {
         require(msg.sender == controller, "!controller");
         uint256 _balance = IERC20(want).balanceOf(address(this));
-        if (_balance < _amount) {
-            _amount = _balance;
-        }
-        if (_amount > 0) {
-            uint256 _fee = _amount.mul(feen).div(feed);
-            if (_fee > 0) {
-                IERC20(want).safeTransfer(
-                    Controller(controller).rewards(),
-                    _fee
-                );
-            }
-            address _vault = Controller(controller).vaults(address(want));
-            require(_vault != address(0), "!vault");
-            IERC20(want).safeTransfer(_vault, _amount.sub(_fee));
-        }
+        _amount = Math.min(_balance, _amount);
+        uint256 _fee = _amount.mul(feen).div(feed);
+        IERC20(want).safeTransfer(Controller(controller).rewards(), _fee);
+        address _vault = Controller(controller).vaults(address(want));
+        require(_vault != address(0), "!vault");
+        IERC20(want).safeTransfer(_vault, _amount.sub(_fee));
     }
 
     function setFeeN(uint256 _feen) external {
