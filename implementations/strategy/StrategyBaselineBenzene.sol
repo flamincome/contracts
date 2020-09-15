@@ -74,27 +74,24 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         _asset.safeTransfer(controller, balance);
     }
 
-    function withdraw(uint256 _amount) external override {
+    function withdraw(uint256 _aw) external override {
         require(msg.sender == controller, "!controller");
-        uint256 _want = IERC20(want).balanceOf(address(this));
-        if (_want < _amount) {
-            _amount = _amount.sub(_want);
-            _amount = _amount.mul(1e18).div(GetPriceE18OfRecvInWant());
-            uint256 _recv = IERC20(recv).balanceOf(address(this));
-            if (_recv < _amount) {
-                _amount = _amount.sub(_recv);
-                _amount = _amount.mul(1e18).div(Vault(frecv).priceE18());
-                uint256 _frecv = IERC20(frecv).balanceOf(address(this));
-                if (_frecv < _amount) {
-                    _amount = _frecv;
-                }
-                Vault(fwant).withdraw(_amount);
-                _amount = IERC20(recv).balanceOf(address(this));
+        uint256 _w = IERC20(want).balanceOf(address(this));
+        if (_w < _aw) {
+            uint256 _ar = _aw.sub(_w).mul(1e18).div(GetPriceE18OfRecvInWant());
+            uint256 _r = IERC20(recv).balanceOf(address(this));
+            if (_r < _ar) {
+                uint256 _af = _ar.sub(_r).mul(1e18).div(
+                    Vault(frecv).priceE18()
+                );
+                uint256 _f = IERC20(frecv).balanceOf(address(this));
+                Vault(fwant).withdraw(Math.min(_f, _af));
             }
-            WithdrawToken(_amount);
-            _amount = IERC20(want).balanceOf(address(this));
+            _r = IERC20(recv).balanceOf(address(this));
+            WithdrawToken(Math.min(_r, _ar));
         }
-        IERC20(want).safeTransfer(fwant, _amount);
+        _w = IERC20(want).balanceOf(address(this));
+        IERC20(want).safeTransfer(fwant, Math.min(_aw, _w));
     }
 
     function withdrawAll() external override returns (uint256 balance) {
