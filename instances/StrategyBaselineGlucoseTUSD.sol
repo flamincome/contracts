@@ -7,7 +7,7 @@ contract StrategyBaselineGlucoseTUSD is StrategyBaselineGlucose {
     constructor()
         public
         StrategyBaselineGlucose(
-            address(0x6B175474E89094C44Da98b954EedeAC495271d0F),
+            address(0x0000000000085d4780B73119b644AE5ecd22b376),
             address(0xDc03b4900Eff97d997f4B828ae0a45cd48C3b22d)
         )
     {}
