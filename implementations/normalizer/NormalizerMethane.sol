@@ -40,7 +40,9 @@ contract NormalizerMethane is ERC20 {
     }
 
     function GetMaximumNToken(address _addr) public view returns (uint256) {
-        uint256 _val = f[_addr].mul(Vault(address(underlying)).priceE18()).div(1e18);
+        uint256 _val = f[_addr].mul(Vault(address(underlying)).priceE18()).div(
+            1e18
+        );
         uint256 _over = _val.mul(overfillE18).div(1e18);
         return _val.sub(_over);
     }
@@ -58,7 +60,7 @@ contract NormalizerMethane is ERC20 {
 
     function MintNToken(uint256 _amount) public {
         n[msg.sender] = n[msg.sender].add(_amount);
-        require(n[msg.sender] <= GetMaximumNToken(msg.sender));
+        require(n[msg.sender] <= GetMaximumNToken(msg.sender), "insufficient");
         _mint(msg.sender, _amount);
     }
 
