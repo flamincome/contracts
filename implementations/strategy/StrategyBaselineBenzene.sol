@@ -11,7 +11,7 @@ import "../../interfaces/flamincome/Vault.sol";
 
 import "./StrategyBaseline.sol";
 
-contract StrategyBaselineBenzene is StrategyBaseline {
+abstract contract StrategyBaselineBenzene is StrategyBaseline {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -32,23 +32,13 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         require(frecv != address(0), "!frecv");
     }
 
-    function DepositToken(uint256 _amount) public virtual {
-        IERC20(want).safeApprove(recv, 0);
-        IERC20(want).safeApprove(recv, _amount);
-        Vault(recv).deposit(_amount);
-    }
+    function DepositToken(uint256 _amount) public virtual;
 
-    function WithdrawToken(uint256 _amount) public virtual {
-        Vault(recv).withdraw(_amount);
-    }
+    function WithdrawToken(uint256 _amount) public virtual;
 
-    function GetRecv() public virtual view returns (address) {
-        return Controller(controller).vaults(want);
-    }
+    function GetRecv() public virtual view returns (address);
 
-    function GetPriceE18OfRecvInWant() public virtual view returns (uint256) {
-        return Vault(recv).priceE18();
-    }
+    function GetPriceE18OfRecvInWant() public virtual view returns (uint256);
 
     function deposit() public override {
         uint256 _want = IERC20(want).balanceOf(address(this));
