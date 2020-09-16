@@ -86,6 +86,7 @@ contract NormalizerMethane is ERC20 {
 
     function SetOverfillE18(uint256 _overfillE18) external {
         require(msg.sender == governance, "!governance");
+        require(_overfillE18 < 1e18, "wrong value");
         overfillE18 = _overfillE18;
     }
 }
