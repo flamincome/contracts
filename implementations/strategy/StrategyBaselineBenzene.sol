@@ -87,7 +87,7 @@ contract StrategyBaselineBenzene is StrategyBaseline {
                     Vault(frecv).priceE18()
                 );
                 uint256 _f = IERC20(frecv).balanceOf(address(this));
-                Vault(fwant).withdraw(Math.min(_f, _af));
+                Vault(frecv).withdraw(Math.min(_f, _af));
             }
             _r = IERC20(recv).balanceOf(address(this));
             WithdrawToken(Math.min(_r, _ar));
@@ -100,7 +100,7 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         require(msg.sender == controller, "!controller");
         uint256 _frecv = IERC20(frecv).balanceOf(address(this));
         if (_frecv > 0) {
-            Vault(fwant).withdraw(_frecv);
+            Vault(frecv).withdraw(_frecv);
         }
         uint256 _recv = IERC20(recv).balanceOf(address(this));
         if (_recv > 0) {
@@ -114,9 +114,14 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         uint256 _frecv = IERC20(frecv).balanceOf(address(this));
         uint256 _recv = IERC20(recv).balanceOf(address(this));
         uint256 _want = IERC20(want).balanceOf(address(this));
-        _frecv = Vault(frecv).priceE18().mul(_frecv).div(1e18);
-        _recv = _recv.add(_frecv);
-        _recv = GetPriceE18OfRecvInWant().mul(_recv).div(1e18);
-        return _want.add(_recv);
+        if (_frecv > 0) {
+            _frecv = Vault(frecv).priceE18().mul(_frecv).div(1e18);
+            _recv = _recv.add(_frecv);
+        }
+        if (_recv > 0) {
+            _recv = GetPriceE18OfRecvInWant().mul(_recv).div(1e18);
+            _want = _want.add(_recv);
+        }
+        return _want;
     }
 }
