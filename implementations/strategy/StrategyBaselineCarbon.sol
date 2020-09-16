@@ -16,6 +16,9 @@ abstract contract StrategyBaselineCarbon is StrategyBaseline {
     using Address for address;
     using SafeMath for uint256;
 
+    uint256 public feen = 5e15;
+    uint256 public constant feed = 1e18;
+
     constructor(address _want, address _controller)
         public
         StrategyBaseline(_want, _controller)
@@ -63,11 +66,18 @@ abstract contract StrategyBaselineCarbon is StrategyBaseline {
         require(msg.sender == controller, "!controller");
         WithdrawToken(GetDeposited());
         balance = IERC20(want).balanceOf(address(this));
-        IERC20(want).safeTransfer(fwant, balance);
+        address _vault = Controller(controller).vaults(address(want));
+        require(_vault != address(0), "!vault");
+        IERC20(want).safeTransfer(_vault, balance);
     }
 
     function balanceOf() public override view returns (uint256) {
         uint256 _want = IERC20(want).balanceOf(address(this));
         return GetDeposited().add(_want);
+    }
+
+    function setFeeN(uint256 _feen) external {
+        require(msg.sender == governance, "!governance");
+        feen = _feen;
     }
 }
