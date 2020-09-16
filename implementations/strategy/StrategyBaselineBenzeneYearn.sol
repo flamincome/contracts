@@ -21,7 +21,7 @@ contract StrategyBaselineBenzeneYearn is StrategyBaselineBenzene {
 
     constructor(address _y, address _controller)
         public
-        StrategyBaselineBenzene(address(0x6B175474E89094C44Da98b954EedeAC495271d0F), _controller)
+        StrategyBaselineBenzene(IYFIVault(_y).token(), _controller)
     {
         SetRecv(_y);
     }
