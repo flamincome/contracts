@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
-interface Realizer {
+interface Normalizer {
     function flam(address) external view returns (uint256);
     function real(address) external view returns (uint256);
     function DepositFlamToken(uint) external;
