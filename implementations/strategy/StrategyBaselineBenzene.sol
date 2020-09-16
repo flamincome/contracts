@@ -23,22 +23,22 @@ abstract contract StrategyBaselineBenzene is StrategyBaseline {
     constructor(address _want, address _controller)
         public
         StrategyBaseline(_want, _controller)
-    {
-        recv = GetRecv();
+    {}
+
+    function DepositToken(uint256 _amount) internal virtual;
+
+    function WithdrawToken(uint256 _amount) internal virtual;
+
+    function GetPriceE18OfRecvInWant() public virtual view returns (uint256);
+
+    function SetRecv(address _recv) internal {
+        recv = _recv;
         frecv = Controller(controller).vaults(recv);
         fwant = Controller(controller).vaults(want);
         require(recv != address(0), "!recv");
         require(fwant != address(0), "!fwant");
         require(frecv != address(0), "!frecv");
     }
-
-    function DepositToken(uint256 _amount) public virtual;
-
-    function WithdrawToken(uint256 _amount) public virtual;
-
-    function GetRecv() public virtual view returns (address);
-
-    function GetPriceE18OfRecvInWant() public virtual view returns (uint256);
 
     function deposit() public override {
         uint256 _want = IERC20(want).balanceOf(address(this));
