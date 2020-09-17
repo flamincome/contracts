@@ -24,7 +24,7 @@ contract StrategyBaselineCarbonGauge is StrategyBaselineCarbon {
         0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1
     );
     address public constant mintr = address(
-        0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1
+        0xd061D61a4d941c39E5453435B6345Dc261C2fcE0
     );
     address public constant crv = address(
         0xD533a949740bb3306d119CC777fa900bA034cd52
@@ -61,6 +61,7 @@ contract StrategyBaselineCarbonGauge is StrategyBaselineCarbon {
     }
 
     function Harvest() external override {
+        require(msg.sender == Controller(controller).strategist() || msg.sender == governance, "!permission");
         IMintr(mintr).mint(pool);
         uint256 _crv = IERC20(crv).balanceOf(address(this));
         if (_crv > 0) {
