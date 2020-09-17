@@ -20,6 +20,9 @@ contract StrategyBaselineCarbonGauge is StrategyBaselineCarbon {
     using Address for address;
     using SafeMath for uint256;
 
+    address public constant ycrv = address(
+        0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8
+    );
     address public constant pool = address(
         0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1
     );
@@ -45,9 +48,9 @@ contract StrategyBaselineCarbonGauge is StrategyBaselineCarbon {
         0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51
     );
 
-    constructor(address _want, address _controller)
+    constructor(address _controller)
         public
-        StrategyBaselineCarbon(_want, _controller)
+        StrategyBaselineCarbon(ycrv, _controller)
     {}
 
     function DepositToken(uint256 _amount) internal override {
