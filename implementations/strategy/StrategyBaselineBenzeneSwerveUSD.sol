@@ -57,6 +57,6 @@ contract StrategyBaselineBenzeneSwerveUSD is StrategyBaselineBenzene {
             _frecv = Vault(frecv).priceE18().mul(_frecv).div(1e18);
             _recv = _recv.add(_frecv);
         }
-        return ISwerveFi(swerve).calc_withdraw_one_coin(_recv, index);
+        return ISwerveFi(swerve).calc_withdraw_one_coin(_recv, index).mul(1e18).div(_recv);
     }
 }
