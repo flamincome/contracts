@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../../interfaces/flamincome/Controller.sol";
 import "../../interfaces/flamincome/Vault.sol";
 
-import "./StrategyBaseline.sol";
+import "./StrategyBaselineAmmonia.sol";
 
-contract StrategyBaselineGlucose is StrategyBaseline {
+contract StrategyBaselineAmmoniaFee is StrategyBaselineAmmonia {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -21,7 +21,7 @@ contract StrategyBaselineGlucose is StrategyBaseline {
 
     constructor(address _want, address _controller)
         public
-        StrategyBaseline(_want, _controller)
+        StrategyBaselineAmmonia(_want, _controller)
     {}
 
     function withdraw(uint256 _amount) external override {

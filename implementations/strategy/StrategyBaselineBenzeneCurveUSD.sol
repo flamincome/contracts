@@ -28,9 +28,10 @@ contract StrategyBaselineBenzeneCurveUSD is StrategyBaselineBenzene {
         StrategyBaselineBenzene(ICurveFi(curve).coins(_index), _controller)
     {
         index = _index;
+        SetRecv(address(0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8));
     }
 
-    function DepositToken(uint256 _amount) public override {
+    function DepositToken(uint256 _amount) internal override {
         IERC20(want).safeApprove(curve, 0);
         IERC20(want).safeApprove(curve, _amount);
         uint256[4] memory vec = [
@@ -43,7 +44,7 @@ contract StrategyBaselineBenzeneCurveUSD is StrategyBaselineBenzene {
         ICurveFi(curve).add_liquidity(vec, 0);
     }
 
-    function WithdrawToken(uint256 _amount) public override {
+    function WithdrawToken(uint256 _amount) internal override {
         IERC20(recv).safeApprove(curve, 0);
         IERC20(recv).safeApprove(curve, _amount);
         uint256[4] memory vec = [
@@ -66,10 +67,6 @@ contract StrategyBaselineBenzeneCurveUSD is StrategyBaselineBenzene {
                 ICurveFi(curve).exchange(i, index, _bal, 0);
             }
         }
-    }
-
-    function GetRecv() public override view returns (address) {
-        return address(0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8);
     }
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {

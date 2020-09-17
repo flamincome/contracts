@@ -11,7 +11,7 @@ import "../../interfaces/flamincome/Vault.sol";
 
 import "./StrategyBaseline.sol";
 
-contract StrategyBaselineBenzene is StrategyBaseline {
+abstract contract StrategyBaselineBenzene is StrategyBaseline {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -23,29 +23,21 @@ contract StrategyBaselineBenzene is StrategyBaseline {
     constructor(address _want, address _controller)
         public
         StrategyBaseline(_want, _controller)
-    {
-        recv = GetRecv();
+    {}
+
+    function DepositToken(uint256 _amount) internal virtual;
+
+    function WithdrawToken(uint256 _amount) internal virtual;
+
+    function GetPriceE18OfRecvInWant() public virtual view returns (uint256);
+
+    function SetRecv(address _recv) internal {
+        recv = _recv;
         frecv = Controller(controller).vaults(recv);
         fwant = Controller(controller).vaults(want);
-        require(recv != address(0), "!fwant");
+        require(recv != address(0), "!recv");
         require(fwant != address(0), "!fwant");
         require(frecv != address(0), "!frecv");
-    }
-
-    function DepositToken(uint256 _amount) public virtual {
-        Vault(recv).deposit(_amount);
-    }
-
-    function WithdrawToken(uint256 _amount) public virtual {
-        Vault(recv).withdraw(_amount);
-    }
-
-    function GetRecv() public virtual view returns (address) {
-        return Controller(controller).vaults(want);
-    }
-
-    function GetPriceE18OfRecvInWant() public virtual view returns (uint256) {
-        return Vault(recv).priceE18();
     }
 
     function deposit() public override {
@@ -85,7 +77,7 @@ contract StrategyBaselineBenzene is StrategyBaseline {
                     Vault(frecv).priceE18()
                 );
                 uint256 _f = IERC20(frecv).balanceOf(address(this));
-                Vault(fwant).withdraw(Math.min(_f, _af));
+                Vault(frecv).withdraw(Math.min(_f, _af));
             }
             _r = IERC20(recv).balanceOf(address(this));
             WithdrawToken(Math.min(_r, _ar));
@@ -98,7 +90,7 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         require(msg.sender == controller, "!controller");
         uint256 _frecv = IERC20(frecv).balanceOf(address(this));
         if (_frecv > 0) {
-            Vault(fwant).withdraw(_frecv);
+            Vault(frecv).withdraw(_frecv);
         }
         uint256 _recv = IERC20(recv).balanceOf(address(this));
         if (_recv > 0) {
@@ -112,9 +104,14 @@ contract StrategyBaselineBenzene is StrategyBaseline {
         uint256 _frecv = IERC20(frecv).balanceOf(address(this));
         uint256 _recv = IERC20(recv).balanceOf(address(this));
         uint256 _want = IERC20(want).balanceOf(address(this));
-        _frecv = Vault(frecv).priceE18().mul(_frecv).div(1e18);
-        _recv = _recv.add(_frecv);
-        _recv = GetPriceE18OfRecvInWant().mul(_recv).div(1e18);
-        return _want.add(_recv);
+        if (_frecv > 0) {
+            _frecv = Vault(frecv).priceE18().mul(_frecv).div(1e18);
+            _recv = _recv.add(_frecv);
+        }
+        if (_recv > 0) {
+            _recv = GetPriceE18OfRecvInWant().mul(_recv).div(1e18);
+            _want = _want.add(_recv);
+        }
+        return _want;
     }
 }

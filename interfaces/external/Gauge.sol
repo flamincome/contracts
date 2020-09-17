@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
-interface Gauge {
+interface IGauge {
     function deposit(uint) external;
     function balanceOf(address) external view returns (uint);
     function withdraw(uint) external;
@@ -15,6 +15,6 @@ interface VotingEscrow {
     function withdraw() external;
 }
 
-interface Mintr {
+interface IMintr {
     function mint(address) external;
 }

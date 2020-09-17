@@ -130,7 +130,7 @@ contract StrategyUSDTDForce {
             path[1] = weth;
             path[2] = want;
             
-            Uni(uni).swapExactTokensForTokens(_df, uint(0), path, address(this), now.add(1800));
+            IUniV2(uni).swapExactTokensForTokens(_df, uint(0), path, address(this), now.add(1800));
         }
         uint _want = IERC20(want).balanceOf(address(this));
         if (_want > 0) {
