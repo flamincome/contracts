@@ -70,6 +70,12 @@ contract StrategyBaselineBenzeneCurveUSD is StrategyBaselineBenzene {
     }
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {
+        if (index == 1 || index == 2) {
+            return
+                ICurveFi(curve).get_virtual_price().mul(1e6).div(
+                    IYFIVault(want).getPricePerFullShare()
+                );
+        }
         return
             ICurveFi(curve).get_virtual_price().mul(1e18).div(
                 IYFIVault(want).getPricePerFullShare()
