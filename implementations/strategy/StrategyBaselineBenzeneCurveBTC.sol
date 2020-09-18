@@ -34,11 +34,7 @@ contract StrategyBaselineBenzeneCurveBTC is StrategyBaselineBenzene {
     function DepositToken(uint256 _amount) internal override {
         IERC20(want).safeApprove(curve, 0);
         IERC20(want).safeApprove(curve, _amount);
-        uint256[3] memory vec = [
-            uint256(0),
-            uint256(0),
-            uint256(0)
-        ];
+        uint256[3] memory vec = [uint256(0), uint256(0), uint256(0)];
         vec[uint256(index)] = _amount;
         ICurveFiBTC(curve).add_liquidity(vec, 0);
     }
@@ -46,11 +42,7 @@ contract StrategyBaselineBenzeneCurveBTC is StrategyBaselineBenzene {
     function WithdrawToken(uint256 _amount) internal override {
         IERC20(recv).safeApprove(curve, 0);
         IERC20(recv).safeApprove(curve, _amount);
-        uint256[3] memory vec = [
-            uint256(0),
-            uint256(0),
-            uint256(0)
-        ];
+        uint256[3] memory vec = [uint256(0), uint256(0), uint256(0)];
         ICurveFiBTC(curve).remove_liquidity(_amount, vec);
 
         for (int128 i = 0; i < 4; i++) {
@@ -68,7 +60,9 @@ contract StrategyBaselineBenzeneCurveBTC is StrategyBaselineBenzene {
     }
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {
-        return
-            ICurveFiBTC(curve).get_virtual_price();
+        if (index < 2) {
+            return ICurveFiBTC(curve).get_virtual_price().div(1e10);
+        }
+        return ICurveFiBTC(curve).get_virtual_price();
     }
 }
