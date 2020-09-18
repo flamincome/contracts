@@ -4,7 +4,7 @@ pragma solidity ^0.6.2;
 interface Normalizer {
     function f(address) external view returns (uint256);
     function n(address) external view returns (uint256);
-    function GetMaximumNToken(address _addr) public view returns (uint256);
+    function GetMaximumNToken(address _addr) external view returns (uint256);
     function DepositFToken(uint) external;
     function WithdrawFToken(uint) external;
     function MintNToken(uint) external;
