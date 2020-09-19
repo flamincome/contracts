@@ -12,7 +12,7 @@ import "../../interfaces/external/DForce.sol";
 
 import "./StrategyBaselineBenzene.sol";
 
-contract StrategyBaselineBenzeneYearn is StrategyBaselineBenzene {
+contract StrategyBaselineBenzeneDForce is StrategyBaselineBenzene {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
