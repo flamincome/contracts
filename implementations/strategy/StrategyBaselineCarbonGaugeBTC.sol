@@ -89,7 +89,7 @@ contract StrategyBaselineCarbonGaugeBTC is StrategyBaselineCarbon {
                 uint256(0),
                 uint256(0)
             ];
-            vec[0] = _wbtc;
+            vec[1] = _wbtc;
             ICurveFiBTC(curve).add_liquidity(vec, 0);
         }
     }
