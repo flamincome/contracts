@@ -6,4 +6,6 @@ interface Vault {
     function priceE18() external view returns (uint);
     function deposit(uint) external;
     function withdraw(uint) external;
+    function depositAll() external;
+    function withdrawAll() external;
 }
