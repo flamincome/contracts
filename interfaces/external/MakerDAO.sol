@@ -89,3 +89,8 @@ interface IOSMedianizer {
     function read() external view returns (uint, bool);
     function foresight() external view returns (uint, bool);
 }
+
+interface IMedianizer {
+    function read() external view returns (bytes32);
+    function peek() constant returns (bytes32, bool)
+}
