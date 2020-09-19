@@ -15,7 +15,7 @@ import "../../interfaces/external/YFI.sol";
 
 import "./StrategyBaselineCarbon.sol";
 
-contract StrategyBaselineCarbonGauge is StrategyBaselineCarbon {
+contract StrategyBaselineCarbonGaugeBTC is StrategyBaselineCarbon {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -90,7 +90,7 @@ contract StrategyBaselineCarbonGauge is StrategyBaselineCarbon {
                 uint256(0)
             ];
             vec[0] = _wbtc;
-            ICurveFi(curve).add_liquidity(vec, 0);
+            ICurveFiBTC(curve).add_liquidity(vec, 0);
         }
     }
 
