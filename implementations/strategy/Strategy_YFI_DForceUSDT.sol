@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 import "../../interfaces/flamincome/Controller.sol";
+import "../../interfaces/flamincome/Vault.sol";
 import "../../interfaces/external/DForce.sol";
 import "../../interfaces/external/Uniswap.sol";
 
-contract StrategyUSDTDForce {
+
+contract Strategy_YFI_DForceUSDT {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -22,21 +24,14 @@ contract StrategyUSDTDForce {
     address constant public uni = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     address constant public weth = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // used for df <> weth <> usdc route
     
-
+    uint public performanceFee = 5000;
+    uint constant public performanceMax = 10000;
+    
+    uint public withdrawalFee = 50;
+    uint constant public withdrawalMax = 10000;
     
     address public governance;
     address public controller;
-
-    function setGovernance(address _governance) external {
-        require(msg.sender == governance, "!governance");
-        governance = _governance;
-    }
-    
-    function setController(address _controller) external {
-        require(msg.sender == governance, "!governance");
-        controller = _controller;
-    }
-
     address public strategist;
     
     constructor(address _controller) public {
@@ -49,21 +44,34 @@ contract StrategyUSDTDForce {
         return "StrategyDForceUSDT";
     }
     
-
+    function setStrategist(address _strategist) external {
+        require(msg.sender == governance, "!governance");
+        strategist = _strategist;
+    }
+    
+    function setWithdrawalFee(uint _withdrawalFee) external {
+        require(msg.sender == governance, "!governance");
+        withdrawalFee = _withdrawalFee;
+    }
+    
+    function setPerformanceFee(uint _performanceFee) external {
+        require(msg.sender == governance, "!governance");
+        performanceFee = _performanceFee;
+    }
     
     function deposit() public {
         uint _want = IERC20(want).balanceOf(address(this));
         if (_want > 0) {
             IERC20(want).safeApprove(d, 0);
             IERC20(want).safeApprove(d, _want);
-            dERC20(d).mint(address(this), _want);
+            IDERC20(d).mint(address(this), _want);
         }
         
         uint _d = IERC20(d).balanceOf(address(this));
         if (_d > 0) {
             IERC20(d).safeApprove(pool, 0);
             IERC20(d).safeApprove(pool, _d);
-            dRewards(pool).stake(_d);
+            IDRewards(pool).stake(_d);
         }
         
     }
@@ -110,16 +118,16 @@ contract StrategyUSDTDForce {
     }
     
     function _withdrawAll() internal {
-        dRewards(pool).exit();
+        IDRewards(pool).exit();
         uint _d = IERC20(d).balanceOf(address(this));
         if (_d > 0) {
-            dERC20(d).redeem(address(this),_d);
+            IDERC20(d).redeem(address(this),_d);
         }
     }
     
     function harvest() public {
         require(msg.sender == strategist || msg.sender == governance, "!authorized");
-        dRewards(pool).getReward();
+        IDRewards(pool).getReward();
         uint _df = IERC20(df).balanceOf(address(this));
         if (_df > 0) {
             IERC20(df).safeApprove(uni, 0);
@@ -141,13 +149,13 @@ contract StrategyUSDTDForce {
     }
     
     function _withdrawSome(uint256 _amount) internal returns (uint) {
-        uint _d = _amount.mul(1e18).div(dERC20(d).getExchangeRate());
+        uint _d = _amount.mul(1e18).div(IDERC20(d).getExchangeRate());
         uint _before = IERC20(d).balanceOf(address(this));
-        dRewards(pool).withdraw(_d);
+        IDRewards(pool).withdraw(_d);
         uint _after = IERC20(d).balanceOf(address(this));
         uint _withdrew = _after.sub(_before);
         _before = IERC20(want).balanceOf(address(this));
-        dERC20(d).redeem(address(this), _withdrew);
+        IDERC20(d).redeem(address(this), _withdrew);
         _after = IERC20(want).balanceOf(address(this));
         _withdrew = _after.sub(_before);
         return _withdrew;
@@ -158,15 +166,15 @@ contract StrategyUSDTDForce {
     }
     
     function balanceOfPool() public view returns (uint) {
-        return (dRewards(pool).balanceOf(address(this))).mul(dERC20(d).getExchangeRate()).div(1e18);
+        return (IDRewards(pool).balanceOf(address(this))).mul(IDERC20(d).getExchangeRate()).div(1e18);
     }
     
     function getExchangeRate() public view returns (uint) {
-        return dERC20(d).getExchangeRate();
+        return IDERC20(d).getExchangeRate();
     }
     
     function balanceOfD() public view returns (uint) {
-        return dERC20(d).getTokenBalance(address(this));
+        return IDERC20(d).getTokenBalance(address(this));
     }
     
     function balanceOf() public view returns (uint) {
@@ -174,25 +182,14 @@ contract StrategyUSDTDForce {
                .add(balanceOfD())
                .add(balanceOfPool());
     }
-
-    uint public performanceFee = 5000;
-    uint constant public performanceMax = 10000;
     
-    uint public withdrawalFee = 50;
-    uint constant public withdrawalMax = 10000;   
-
-    function setStrategist(address _strategist) external {
+    function setGovernance(address _governance) external {
         require(msg.sender == governance, "!governance");
-        strategist = _strategist;
+        governance = _governance;
     }
     
-    function setWithdrawalFee(uint _withdrawalFee) external {
+    function setController(address _controller) external {
         require(msg.sender == governance, "!governance");
-        withdrawalFee = _withdrawalFee;
+        controller = _controller;
     }
-    
-    function setPerformanceFee(uint _performanceFee) external {
-        require(msg.sender == governance, "!governance");
-        performanceFee = _performanceFee;
-    }  
 }
