@@ -45,7 +45,7 @@ contract StrategyBaselineBenzeneCurveBTC is StrategyBaselineBenzene {
         uint256[3] memory vec = [uint256(0), uint256(0), uint256(0)];
         ICurveFiBTC(curve).remove_liquidity(_amount, vec);
 
-        for (int128 i = 0; i < 4; i++) {
+        for (int128 i = 0; i < 3; i++) {
             if (i == index) {
                 continue;
             }
