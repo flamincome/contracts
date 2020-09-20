@@ -3,7 +3,7 @@ pragma solidity ^0.6.2;
 
 import "../implementations/strategy/StrategyBaselineBenzeneCurveBTC.sol";
 
-contract StrategyBaselineBenzeneCurveBTCDAI is StrategyBaselineBenzeneCurveBTC {
+contract StrategyBaselineBenzeneCurveBTCwBTC is StrategyBaselineBenzeneCurveBTC {
     constructor()
         public
         StrategyBaselineBenzeneCurveBTC(
