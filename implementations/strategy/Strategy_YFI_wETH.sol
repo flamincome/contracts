@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../../interfaces/flamincome/Controller.sol";
 import "../../interfaces/flamincome/Vault.sol";
 import "../../interfaces/external/MakerDAO.sol";
-import "../../interfaces/external/Uniswap.sol";
+import "../../interfaces/external/MakerDAO.sol";
 
 contract Strategy_YFI_wETH {
     using SafeERC20 for IERC20;
@@ -28,7 +28,7 @@ contract Strategy_YFI_wETH {
     address public mcd_spot = address(0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
     address public jug = address(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
 
-    address public eth_price_oracle = address(0xCF63089A8aD2a9D8BD6Bb8022f3190EB7e1eD0f1);
+    address public eth_price_oracle = address(0x66d828CF5f39Db5Ab6B30BE8234918f84e008FDf);
     address constant public fDAI = address(0x163D457fA8247f1A9279B9fa8eF513de116e4327);
 
     address constant public unirouter = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);

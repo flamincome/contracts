@@ -92,5 +92,7 @@ interface IOSMedianizer {
 
 interface IMedianizer {
     function read() external view returns (bytes32);
-    function peek() view returns (bytes32, bool)
+    function peek() external view returns (bytes32, bool);
+    function poke() external;
+    function compute() external view returns (bytes32, bool);
 }
