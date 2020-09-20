@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../../interfaces/flamincome/Controller.sol";
 import "../../interfaces/flamincome/Vault.sol";
 import "../../interfaces/external/MakerDAO.sol";
+import "../../interfaces/external/Uniswap.sol";
 
 contract Strategy_YFI_wETH {
     using SafeERC20 for IERC20;
