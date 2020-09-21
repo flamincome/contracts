@@ -43,12 +43,12 @@ contract StrategyBaselineBenzeneAaveETH is StrategyBaselineBenzene {
         IWETH(want).withdraw(_amount);
         address pool = ILendingPoolAddressesProvider(provider).getLendingPool();
         require(pool != address(0), "!pool");
-        ILendingPool(pool).deposit{value: _amount}(eth, _amount, 0);
+        ILendingPool(pool).deposit{value: address(this).balance}(eth, _amount, 0);
     }
 
     function WithdrawToken(uint256 _amount) internal override {
         IAaveToken(aeth).redeem(_amount);
-        IWETH(want).deposit{value: _amount}();
+        IWETH(want).deposit{value: address(this).balance}();
     }
 
     function GetPriceE18OfRecvInWant() public override view returns (uint256) {
