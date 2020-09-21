@@ -55,5 +55,5 @@ contract StrategyBaselineBenzeneAaveETH is StrategyBaselineBenzene {
         return 1e18;
     }
 
-    function() external payable {}
+    receive() external payable {}
 }
