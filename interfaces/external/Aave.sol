@@ -1,6 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
+interface IAave {
+    function deposit(address _reserve, uint256 _amount, uint16 _referralCode) external;
+}
+
+interface ILendingPoolAddressesProvider {
+    function getLendingPool() external view returns (address);
+    function getLendingPoolCore() external view returns (address);
+    function getPriceOracle() external view returns (address);
+}
+
+interface ILendingPool {
+    function deposit(address, uint256, uint16) external payable;
+}
+
+interface IAaveToken {
+    function redeem(uint256) external;
+}
+
 interface Aave {
     function borrow(address _reserve, uint _amount, uint _interestRateModel, uint16 _referralCode) external;
     function setUserUseReserveAsCollateral(address _reserve, bool _useAsCollateral) external;
@@ -35,11 +53,7 @@ interface Aave {
         );
 }
 
-interface LendingPoolAddressesProvider {
-    function getLendingPool() external view returns (address);
-    function getLendingPoolCore() external view returns (address);
-    function getPriceOracle() external view returns (address);
-}
+
 
 interface AaveToken {
     function underlyingAssetAddress() external view returns (address);
