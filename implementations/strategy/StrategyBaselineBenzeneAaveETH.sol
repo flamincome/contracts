@@ -13,7 +13,7 @@ import "../../interfaces/external/WETH.sol";
 
 import "./StrategyBaselineBenzene.sol";
 
-contract StrategyBaselineBenzeneCurveBTC is StrategyBaselineBenzene {
+contract StrategyBaselineBenzeneAaveETH is StrategyBaselineBenzene {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
