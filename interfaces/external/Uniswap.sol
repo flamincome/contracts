@@ -37,3 +37,51 @@ interface UniSwapV1 {
     function balanceOf(address _owner) external view returns (uint256);
     function totalSupply() external view returns (uint256);
 }
+
+interface StakingRewards{
+    function balanceOf(address account) external view returns (uint256);
+    function stake(uint256 amount) external;
+    function withdraw(uint256 amount) external;
+    function getReward() external;
+    function rewardPerToken() external;
+    function exit() external;
+}
+
+interface UniswapV2Router02{
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint amountADesired,
+        uint amountBDesired,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountA, uint amountB, uint liquidity);
+    function addLiquidityETH(
+        address token,
+        uint amountTokenDesired,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint liquidity,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountA, uint amountB);
+    function removeLiquidityETH(
+        address token,
+        uint liquidity,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountToken, uint amountETH);
+    function swapExactTokensForTokens(uint, uint, address[] calldata, address, uint) external;
+}
