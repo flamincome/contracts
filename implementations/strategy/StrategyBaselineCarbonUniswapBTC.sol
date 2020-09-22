@@ -59,12 +59,12 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
         StakingRewards(lppool).getReward();
         uint256 unitokenBalance = IERC20(unitoken).balanceOf(address(this));
 
-        uint256 amountOutMin = 1;
-
         IERC20(unitoken).safeApprove(uniswapRouterV2, 0);
         IERC20(unitoken).safeApprove(uniswapRouterV2, unitokenBalance);
 
-        // sell Uni to weth
+        uint256 amountOutMin = 1;
+
+        // sell uni to weth
         address[] memory path1 = new address[](2);
         path1[0] = unitoken;
         path1[1] = weth;
