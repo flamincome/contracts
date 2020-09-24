@@ -55,39 +55,36 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
     }
 
     function Harvest() external override {
-        require(msg.sender == Controller(controller).strategist() || msg.sender == governance, "!permission");
+        require(
+            msg.sender == Controller(controller).strategist() ||
+                msg.sender == governance,
+            "!permission"
+        );
         IUniStakingRewards(lppool).getReward();
         uint256 unitokenBalance = IERC20(unitoken).balanceOf(address(this));
 
         IERC20(unitoken).safeApprove(uniswapRouterV2, 0);
         IERC20(unitoken).safeApprove(uniswapRouterV2, unitokenBalance);
-
-        uint256 amountOutMin = 1;
-
-        // sell uni to weth
         address[] memory path1 = new address[](2);
         path1[0] = unitoken;
         path1[1] = weth;
         IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
             unitokenBalance,
-            amountOutMin,
+            0,
             path1,
             address(this),
             block.timestamp
         );
 
         uint256 wethAmount = IERC20(weth).balanceOf(address(this));
-
-        // sell weth/2 to wbtc
-        uint256 sellWETHAmount = wethAmount / 2;
         IERC20(weth).safeApprove(uniswapRouterV2, 0);
-        IERC20(weth).safeApprove(uniswapRouterV2, sellWETHAmount);
+        IERC20(weth).safeApprove(uniswapRouterV2, wethAmount);
         address[] memory path2 = new address[](2);
         path2[0] = weth;
-        path2[1] = wbtc; 
+        path2[1] = wbtc;
         IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
-            sellWETHAmount,
-            amountOutMin,
+            wethAmount / 2,
+            0,
             path2,
             address(this),
             block.timestamp
@@ -96,22 +93,16 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
         wethAmount = IERC20(weth).balanceOf(address(this));
         uint256 wbtcAmount = IERC20(wbtc).balanceOf(address(this));
 
-        // provide weth and wbtc to UniLPToken
-
-        IERC20(weth).safeApprove(uniswapRouterV2, 0);
-        IERC20(weth).safeApprove(uniswapRouterV2, wethAmount);
-
         IERC20(wbtc).safeApprove(uniswapRouterV2, 0);
         IERC20(wbtc).safeApprove(uniswapRouterV2, wbtcAmount);
 
-        uint256 liquidity;
-        (,,liquidity) = IUniswapV2Router02(uniswapRouterV2).addLiquidity(
+        IUniswapV2Router02(uniswapRouterV2).addLiquidity(
             weth,
             wbtc,
-            wethAmount, 
+            wethAmount,
             wbtcAmount,
             1,
-            1,  
+            1,
             address(this),
             block.timestamp
         );
