@@ -38,7 +38,11 @@ interface UniSwapV1 {
     function totalSupply() external view returns (uint256);
 }
 
+<<<<<<< HEAD
 interface StakingRewards{
+=======
+interface IUniStakingRewards{
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
     function balanceOf(address account) external view returns (uint256);
     function stake(uint256 amount) external;
     function withdraw(uint256 amount) external;
@@ -47,7 +51,11 @@ interface StakingRewards{
     function exit() external;
 }
 
+<<<<<<< HEAD
 interface UniswapV2Router02{
+=======
+interface IUniswapV2Router02{
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
     function addLiquidity(address tokenA, address tokenB, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline) external returns (uint amountA, uint amountB, uint liquidity);
     function addLiquidityETH(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external payable returns (uint amountToken, uint amountETH, uint liquidity);
     function removeLiquidity(address tokenA, address tokenB, uint liquidity, uint amountAMin, uint amountBMin, address to, uint deadline) external returns (uint amountA, uint amountB);

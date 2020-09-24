@@ -47,16 +47,28 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
     function DepositToken(uint256 _amount) internal override {
         IERC20(want).safeApprove(lppool, 0);
         IERC20(want).safeApprove(lppool, _amount);
+<<<<<<< HEAD
         StakingRewards(lppool).stake(_amount);
     }
 
     function WithdrawToken(uint256 _amount) internal override {
         StakingRewards(lppool).withdraw(_amount);
+=======
+        IUniStakingRewards(lppool).stake(_amount);
+    }
+
+    function WithdrawToken(uint256 _amount) internal override {
+        IUniStakingRewards(lppool).withdraw(_amount);
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
     }
 
     function Harvest() external override {
         require(msg.sender == Controller(controller).strategist() || msg.sender == governance, "!permission");
+<<<<<<< HEAD
         StakingRewards(lppool).getReward();
+=======
+        IUniStakingRewards(lppool).getReward();
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
         uint256 unitokenBalance = IERC20(unitoken).balanceOf(address(this));
 
         IERC20(unitoken).safeApprove(uniswapRouterV2, 0);
@@ -68,7 +80,11 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
         address[] memory path1 = new address[](2);
         path1[0] = unitoken;
         path1[1] = weth;
+<<<<<<< HEAD
         UniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+=======
+        IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
             unitokenBalance,
             amountOutMin,
             path1,
@@ -85,7 +101,11 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
         address[] memory path2 = new address[](2);
         path2[0] = weth;
         path2[1] = wbtc; 
+<<<<<<< HEAD
         UniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+=======
+        IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
             sellWETHAmount,
             amountOutMin,
             path2,
@@ -105,7 +125,11 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
         IERC20(wbtc).safeApprove(uniswapRouterV2, wbtcAmount);
 
         uint256 liquidity;
+<<<<<<< HEAD
         (,,liquidity) = UniswapV2Router02(uniswapRouterV2).addLiquidity(
+=======
+        (,,liquidity) = IUniswapV2Router02(uniswapRouterV2).addLiquidity(
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
             weth,
             wbtc,
             wethAmount, 
@@ -118,6 +142,10 @@ contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
     }
 
     function GetDeposited() public override view returns (uint256) {
+<<<<<<< HEAD
         return StakingRewards(lppool).balanceOf(address(this));
+=======
+        return IUniStakingRewards(lppool).balanceOf(address(this));
+>>>>>>> bfb033be6444afdacdb60702140ad0b8ff16740a
     }
 }
