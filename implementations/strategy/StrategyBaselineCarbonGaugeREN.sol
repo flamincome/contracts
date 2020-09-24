@@ -84,8 +84,7 @@ contract StrategyBaselineCarbonGaugeBTC is StrategyBaselineCarbon {
             uint256 _wbtc = IERC20(wbtc).balanceOf(address(this));
             IERC20(wbtc).safeApprove(curve, 0);
             IERC20(wbtc).safeApprove(curve, _wbtc);
-            uint256[3] memory vec = [
-                uint256(0),
+            uint256[2] memory vec = [
                 uint256(0),
                 uint256(0)
             ];
