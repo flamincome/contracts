@@ -12,7 +12,7 @@ import "../../interfaces/external/Uniswap.sol";
 
 import "./StrategyBaselineCarbon.sol";
 
-contract StrategyBaselineCarbonUniswapBTC is StrategyBaselineCarbon {
+contract StrategyBaselineCarbonUniswapWBTC is StrategyBaselineCarbon {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
