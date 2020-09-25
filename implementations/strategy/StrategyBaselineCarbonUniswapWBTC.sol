@@ -61,55 +61,57 @@ contract StrategyBaselineCarbonUniswapWBTC is StrategyBaselineCarbon {
             "!permission"
         );
         IUniStakingRewards(lppool).getReward();
-
         uint256 unitokenBalance = IERC20(unitoken).balanceOf(address(this));
-        uint256 _fee = unitokenBalance.mul(feen).div(feed);
-        IERC20(unitoken).safeTransfer(Controller(controller).rewards(), _fee);
-        unitokenBalance = unitokenBalance.sub(_fee);
 
-        IERC20(unitoken).safeApprove(uniswapRouterV2, 0);
-        IERC20(unitoken).safeApprove(uniswapRouterV2, unitokenBalance);
-        address[] memory path1 = new address[](2);
-        path1[0] = unitoken;
-        path1[1] = weth;
-        IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
-            unitokenBalance,
-            0,
-            path1,
-            address(this),
-            block.timestamp
-        );
+        if (unitokenBalance > 0) {
+            uint256 _fee = unitokenBalance.mul(feen).div(feed);
+            IERC20(unitoken).safeTransfer(Controller(controller).rewards(), _fee);
+            unitokenBalance = unitokenBalance.sub(_fee);
 
-        uint256 wethAmount = IERC20(weth).balanceOf(address(this));
-        IERC20(weth).safeApprove(uniswapRouterV2, 0);
-        IERC20(weth).safeApprove(uniswapRouterV2, wethAmount);
-        address[] memory path2 = new address[](2);
-        path2[0] = weth;
-        path2[1] = wbtc;
-        IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
-            wethAmount / 2,
-            0,
-            path2,
-            address(this),
-            block.timestamp
-        );
+            IERC20(unitoken).safeApprove(uniswapRouterV2, 0);
+            IERC20(unitoken).safeApprove(uniswapRouterV2, unitokenBalance);
+            address[] memory path1 = new address[](2);
+            path1[0] = unitoken;
+            path1[1] = weth;
+            IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+                unitokenBalance,
+                0,
+                path1,
+                address(this),
+                block.timestamp
+            );
 
-        wethAmount = IERC20(weth).balanceOf(address(this));
-        uint256 wbtcAmount = IERC20(wbtc).balanceOf(address(this));
+            uint256 wethAmount = IERC20(weth).balanceOf(address(this));
+            IERC20(weth).safeApprove(uniswapRouterV2, 0);
+            IERC20(weth).safeApprove(uniswapRouterV2, wethAmount);
+            address[] memory path2 = new address[](2);
+            path2[0] = weth;
+            path2[1] = wbtc;
+            IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+                wethAmount / 2,
+                0,
+                path2,
+                address(this),
+                block.timestamp
+            );
 
-        IERC20(wbtc).safeApprove(uniswapRouterV2, 0);
-        IERC20(wbtc).safeApprove(uniswapRouterV2, wbtcAmount);
+            wethAmount = IERC20(weth).balanceOf(address(this));
+            uint256 wbtcAmount = IERC20(wbtc).balanceOf(address(this));
 
-        IUniswapV2Router02(uniswapRouterV2).addLiquidity(
-            weth,
-            wbtc,
-            wethAmount,
-            wbtcAmount,
-            1,
-            1,
-            address(this),
-            block.timestamp
-        );
+            IERC20(wbtc).safeApprove(uniswapRouterV2, 0);
+            IERC20(wbtc).safeApprove(uniswapRouterV2, wbtcAmount);
+
+            IUniswapV2Router02(uniswapRouterV2).addLiquidity(
+                weth,
+                wbtc,
+                wethAmount,
+                wbtcAmount,
+                1,
+                1,
+                address(this),
+                block.timestamp
+            );
+        }
     }
 
     function GetDeposited() public override view returns (uint256) {
