@@ -87,6 +87,9 @@ contract ControllerBaseline {
         require(approvedStrategies[_token][_strategy] == true, "!approved");
 
         address _current = strategies[_token];
+
+        if (_current == _strategy) return;
+
         if (_current != address(0)) {
            Strategy(_current).withdrawAll();
         }
