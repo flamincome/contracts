@@ -61,11 +61,11 @@ contract ControllerEthane {
         for (uint i = 0; i < _tokenStrategies.length - 1; i++)
             if (_tokenStrategies[i] == _strategy) {
                 _tokenStrategies[i] = _tokenStrategies[_tokenStrategies.length - 1];
+
+                _tokenStrategies.pop();
+                Strategy(_strategy).withdrawAll();
                 break;
             }
-        _tokenStrategies.pop();
-
-        Strategy(_strategy).withdrawAll();
     }
 
     function SetDefaultDepositStrategy(address _token, address _strategy)
