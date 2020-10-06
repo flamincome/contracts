@@ -54,6 +54,14 @@ contract StrategyBaselineCarbonUniswapWBTCResilient is StrategyBaselineCarbon {
         IUniStakingRewards(lppool).withdraw(_amount);
     }
 
+    function WithdrawTokenPublic(uint256 _amount) public {
+        require(
+            msg.sender == Controller(controller).strategist() || msg.sender == governance,
+            "!permission"
+        );
+        IUniStakingRewards(lppool).withdraw(_amount);
+    }
+
     function AddLiquidity() public {
         require(
             msg.sender == Controller(controller).strategist() || msg.sender == governance,
@@ -207,6 +215,8 @@ contract StrategyBaselineCarbonUniswapWBTCResilient is StrategyBaselineCarbon {
     }
 
     function GetDeposited() public override view returns (uint256) {
-        return IUniStakingRewards(lppool).balanceOf(address(this));
+        uint256 lpTokenAmountInPool = IUniStakingRewards(lppool).balanceOf(address(this));
+        uint256 lpTokenAmountReserved = IERC20(lptoken).balanceOf(address(this));
+        return lpTokenAmountInPool.add(lpTokenAmountReserved);
     }
 }
