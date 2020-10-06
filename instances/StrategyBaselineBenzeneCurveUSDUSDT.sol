@@ -8,7 +8,7 @@ contract StrategyBaselineBenzeneCurveUSDUSDT is StrategyBaselineBenzeneCurveUSD 
         public
         StrategyBaselineBenzeneCurveUSD(
             2,
-            address(0xDc03b4900Eff97d997f4B828ae0a45cd48C3b22d)
+            address(0xc1624A9b9bf3b339Ce3b03F8ffbF79e4041a7287)
         )
     {}
 }
