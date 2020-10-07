@@ -62,6 +62,29 @@ contract StrategyBaselineCarbonUniswapWBTCResilient is StrategyBaselineCarbon {
         IUniStakingRewards(lppool).withdraw(_amount);
     }
 
+    function EliminateWBTC() public {
+        require(
+            msg.sender == Controller(controller).strategist() || msg.sender == governance,
+            "!permission"
+        );
+
+        uint256 wbtcAmount = IERC20(weth).balanceOf(address(this));
+        if (wbtcAmount > 0) {
+            IERC20(wbtc).safeApprove(uniswapRouterV2, 0);
+            IERC20(wbtc).safeApprove(uniswapRouterV2, wbtcAmount);
+            address[] memory path = new address[](2);
+            path[0] = wbtc;
+            path[1] = weth;
+            IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+                wbtcAmount,
+                0,
+                path,
+                address(this),
+                block.timestamp
+            );
+        }
+    }
+
     function AddLiquidity() public {
         require(
             msg.sender == Controller(controller).strategist() || msg.sender == governance,
@@ -85,7 +108,7 @@ contract StrategyBaselineCarbonUniswapWBTCResilient is StrategyBaselineCarbon {
         );
         wethAmount = IERC20(weth).balanceOf(address(this));
         wbtcAmount = IERC20(wbtc).balanceOf(address(this));
-        while (wethAmount > 0 || wbtcAmount > 0) {
+        if (wethAmount > 0 || wbtcAmount > 0) {
             if (wethAmount > 0) {
                 wethAmount = IERC20(weth).balanceOf(address(this));
                 IERC20(weth).safeApprove(uniswapRouterV2, 0);
@@ -133,6 +156,7 @@ contract StrategyBaselineCarbonUniswapWBTCResilient is StrategyBaselineCarbon {
                 block.timestamp
             );
         }
+        EliminateWBTC();
     }
 
     function RemoveLiquidity() public {
@@ -211,6 +235,8 @@ contract StrategyBaselineCarbonUniswapWBTCResilient is StrategyBaselineCarbon {
                 address(this),
                 block.timestamp
             );
+
+            EliminateWBTC();
         }
     }
 
