@@ -31,15 +31,15 @@ contract Strategy_YFI_DForceUSDT {
     uint constant public withdrawalMax = 10000;
     
     address public governance;
-    address public controller;
     address public strategist;
+    address public vaultX;
+    address public vaultY;
     
     constructor(address _controller) public {
         governance = msg.sender;
         strategist = msg.sender;
-        controller = _controller;
     }
-    
+
     function getName() external pure returns (string memory) {
         return "StrategyDForceUSDT";
     }
@@ -76,53 +76,26 @@ contract Strategy_YFI_DForceUSDT {
         
     }
     
-    // Controller only function for creating additional rewards from dust
     function withdraw(IERC20 _asset) external returns (uint balance) {
-        require(msg.sender == controller, "!controller");
+        require(msg.sender == vaultX || msg.sender == vaultY, "!vault");
         require(want != address(_asset), "want");
         require(d != address(_asset), "d");
         balance = _asset.balanceOf(address(this));
-        _asset.safeTransfer(controller, balance);
+        _asset.safeTransfer(msg.sender, balance);
     }
     
     // Withdraw partial funds, normally used with a vault withdrawal
     function withdraw(uint _amount) external {
-        require(msg.sender == controller, "!controller");
+        require(msg.sender == vaultX || msg.sender == vaultY, "!vault");
         uint _balance = IERC20(want).balanceOf(address(this));
         if (_balance < _amount) {
             _amount = _withdrawSome(_amount.sub(_balance));
             _amount = _amount.add(_balance);
         }
         
-        uint _fee = _amount.mul(withdrawalFee).div(withdrawalMax);
-        
-        
-        IERC20(want).safeTransfer(Controller(controller).rewards(), _fee);
-        address _vault = Controller(controller).vaults(address(want));
-        require(_vault != address(0), "!vault"); // additional protection so we don't burn the funds
-        
-        IERC20(want).safeTransfer(_vault, _amount.sub(_fee));
-    }
-    
-    // Withdraw all funds, normally used when migrating strategies
-    function withdrawAll() external returns (uint balance) {
-        require(msg.sender == controller, "!controller");
-        _withdrawAll();
-        
-        
-        balance = IERC20(want).balanceOf(address(this));
-        
-        address _vault = Controller(controller).vaults(address(want));
-        require(_vault != address(0), "!vault"); // additional protection so we don't burn the funds
-        IERC20(want).safeTransfer(_vault, balance);
-    }
-    
-    function _withdrawAll() internal {
-        IDRewards(pool).exit();
-        uint _d = IERC20(d).balanceOf(address(this));
-        if (_d > 0) {
-            IDERC20(d).redeem(address(this),_d);
-        }
+        uint _fee = _amount.mul(withdrawalFee).div(withdrawalMax);               
+        IERC20(want).safeTransfer(governance, _fee);       
+        IERC20(want).safeTransfer(msg.sender, _amount.sub(_fee));
     }
     
     function harvest() public {
@@ -143,7 +116,7 @@ contract Strategy_YFI_DForceUSDT {
         uint _want = IERC20(want).balanceOf(address(this));
         if (_want > 0) {
             uint _fee = _want.mul(performanceFee).div(performanceMax);
-            IERC20(want).safeTransfer(Controller(controller).rewards(), _fee);
+            IERC20(want).safeTransfer(governance, _fee);
             deposit();
         }
     }
@@ -187,9 +160,14 @@ contract Strategy_YFI_DForceUSDT {
         require(msg.sender == governance, "!governance");
         governance = _governance;
     }
-    
-    function setController(address _controller) external {
+        
+    function setVaultX(address _vaultX) public {
         require(msg.sender == governance, "!governance");
-        controller = _controller;
+        vaultX = _vaultX;
+    }
+
+    function setVaultY(address _vaultY) public {
+        require(msg.sender == governance, "!governance");
+        vaultY = _vaultY;
     }
 }
