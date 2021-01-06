@@ -72,6 +72,7 @@ contract VaultBaselineX is ERC20 {
         uint _after = token.balanceOf(address(this));
         uint _shares = _after.sub(_before); // Additional check for deflationary tokens
         _mint(msg.sender, _shares);
+        earn();
     }
 
     function withdrawAll() public {
@@ -102,7 +103,6 @@ contract VaultBaselineX is ERC20 {
 
     function withdrawVault(address _token, uint _amount) public {
         require(msg.sender == governance, "!governance");
-        require(_token != address(token), "!token");
         IERC20(_token).safeTransfer(msg.sender, _amount);
     }
 }

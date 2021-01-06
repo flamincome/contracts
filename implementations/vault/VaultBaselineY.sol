@@ -22,19 +22,22 @@ contract VaultBaselineY is ERC20 {
 
     address public governance;
     address public strategy = address(0);
+    address public xvault;
 
-    constructor (address _token) public ERC20(
+    constructor (address _token, address _xvault) public ERC20(
         string(abi.encodePacked("YIELD FLAMINCOME ", ERC20(_token).name())),
         string(abi.encodePacked("Y", ERC20(_token).symbol()))
     ) {
         _setupDecimals(ERC20(_token).decimals());
         token = IERC20(_token);
         governance = msg.sender;
+        xvault = _xvault;
     }
 
     function balance() public view returns (uint) {
         return token.balanceOf(address(this))
-                .add(Strategy(strategy).balanceOf());
+                .add(Strategy(strategy).balanceOf())
+                .sub(IERC20(xvault).totalSupply());
     }
 
     function setMin(uint _min) public {
@@ -45,6 +48,11 @@ contract VaultBaselineY is ERC20 {
     function setGovernance(address _governance) public {
         require(msg.sender == governance, "!governance");
         governance = _governance;
+    }
+
+    function setXVault(address _xvault) public {
+        require(msg.sender == governance, "!governance");
+        xvault = _xvault;
     }
 
     function setStrategy(address _strategy) public {
@@ -84,6 +92,7 @@ contract VaultBaselineY is ERC20 {
             shares = (_amount.mul(totalSupply())).div(_pool);
         }
         _mint(msg.sender, shares);
+        earn();
     }
 
     function withdrawAll() public {
@@ -118,7 +127,6 @@ contract VaultBaselineY is ERC20 {
 
     function withdrawVault(address _token, uint _amount) public {
         require(msg.sender == governance, "!governance");
-        require(_token != address(token), "!token");
         IERC20(_token).safeTransfer(msg.sender, _amount);
     }
 }
