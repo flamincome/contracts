@@ -1,6 +1,5 @@
 // File: @openzeppelin/contracts/math/SafeMath.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -162,7 +161,6 @@ library SafeMath {
 
 // File: @openzeppelin/contracts/token/ERC20/IERC20.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -242,7 +240,6 @@ interface IERC20 {
 
 // File: @openzeppelin/contracts/utils/Address.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.2;
 
@@ -386,7 +383,6 @@ library Address {
 
 // File: @openzeppelin/contracts/token/ERC20/SafeERC20.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -463,7 +459,6 @@ library SafeERC20 {
 
 // File: contracts/interfaces/flamincome/Controller.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 interface Controller {
@@ -477,7 +472,6 @@ interface Controller {
 
 // File: contracts/interfaces/flamincome/Vault.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 interface Vault {
@@ -491,7 +485,6 @@ interface Vault {
 
 // File: @openzeppelin/contracts/math/Math.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -525,7 +518,6 @@ library Math {
 
 // File: contracts/implementations/strategy/StrategyBaseline.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 
@@ -572,7 +564,6 @@ abstract contract StrategyBaseline {
 
 // File: contracts/implementations/strategy/StrategyBaselineAmmonia.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 
@@ -629,7 +620,6 @@ contract StrategyBaselineAmmonia is StrategyBaseline {
 
 // File: contracts/implementations/strategy/StrategyBaselineAmmoniaLiquid.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 
