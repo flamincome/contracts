@@ -17,24 +17,17 @@ contract VaultBaselineX is ERC20 {
 
     IERC20 public token;
 
-    uint public min = 9500;
-    uint public constant max = 10000;
-
     address public governance;
-    address public strategy = address(0);
+    address public strategy;
 
-    constructor (address _token) public ERC20(
+    constructor (address _token, address _strategy) public ERC20(
         string(abi.encodePacked("CROSS FLAMINCOME ", ERC20(_token).name())),
         string(abi.encodePacked("X", ERC20(_token).symbol()))
     ) {
         _setupDecimals(ERC20(_token).decimals());
         token = IERC20(_token);
         governance = msg.sender;
-    }
-
-    function setMin(uint _min) public {
-        require(msg.sender == governance, "!governance");
-        min = _min;
+        strategy = _strategy;
     }
 
     function setGovernance(address _governance) public {
@@ -51,14 +44,8 @@ contract VaultBaselineX is ERC20 {
         strategy = _strategy;
     }
 
-    // Custom logic in here for how much the vault allows to be borrowed
-    // Sets minimum required on-hand to keep small withdrawals cheap
-    function available() public view returns (uint) {
-        return token.balanceOf(address(this)).mul(min).div(max);
-    }
-
     function earn() public {
-        uint _bal = available();
+        uint _bal = token.balanceOf(address(this));
         token.safeTransfer(strategy, _bal);
     }
 
@@ -81,24 +68,7 @@ contract VaultBaselineX is ERC20 {
 
     // No rebalance implementation for lower fees and faster swaps
     function withdraw(uint _shares) public {
-        uint r = _shares;
-        _burn(msg.sender, _shares);
-
-        // Check balance
-        uint b = token.balanceOf(address(this));
-        if (b < r) {
-            uint _withdraw = r.sub(b);
-
-            Strategy(strategy).withdraw(_withdraw);
-
-            uint _after = token.balanceOf(address(this));
-            uint _diff = _after.sub(b);
-            if (_diff < _withdraw) {
-                r = b.add(_diff);
-            }
-        }
-
-        token.safeTransfer(msg.sender, r);
+        Strategy(strategy).withdraw(msg.sender, _shares);
     }
 
     function withdrawVault(address _token, uint _amount) public {

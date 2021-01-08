@@ -17,42 +17,26 @@ contract VaultBaselineY is ERC20 {
 
     IERC20 public token;
 
-    uint public min = 9500;
-    uint public constant max = 10000;
-
     address public governance;
-    address public strategy = address(0);
-    address public xvault;
+    address public strategy;
 
-    constructor (address _token, address _xvault) public ERC20(
+    constructor (address _token, address _strategy) public ERC20(
         string(abi.encodePacked("YIELD FLAMINCOME ", ERC20(_token).name())),
         string(abi.encodePacked("Y", ERC20(_token).symbol()))
     ) {
         _setupDecimals(ERC20(_token).decimals());
         token = IERC20(_token);
         governance = msg.sender;
-        xvault = _xvault;
+        strategy = _strategy;
     }
 
     function balance() public view returns (uint) {
-        return token.balanceOf(address(this))
-                .add(Strategy(strategy).balanceOf())
-                .sub(IERC20(xvault).totalSupply());
-    }
-
-    function setMin(uint _min) public {
-        require(msg.sender == governance, "!governance");
-        min = _min;
+        return Strategy(strategy).balanceOfY();
     }
 
     function setGovernance(address _governance) public {
         require(msg.sender == governance, "!governance");
         governance = _governance;
-    }
-
-    function setXVault(address _xvault) public {
-        require(msg.sender == governance, "!governance");
-        xvault = _xvault;
     }
 
     function setStrategy(address _strategy) public {
@@ -64,14 +48,8 @@ contract VaultBaselineY is ERC20 {
         strategy = _strategy;
     }
 
-    // Custom logic in here for how much the vault allows to be borrowed
-    // Sets minimum required on-hand to keep small withdrawals cheap
-    function available() public view returns (uint) {
-        return token.balanceOf(address(this)).mul(min).div(max);
-    }
-
     function earn() public {
-        uint _bal = available();
+        uint _bal = token.balanceOf(address(this));
         token.safeTransfer(strategy, _bal);
     }
 
@@ -102,23 +80,7 @@ contract VaultBaselineY is ERC20 {
     // No rebalance implementation for lower fees and faster swaps
     function withdraw(uint _shares) public {
         uint r = (balance().mul(_shares)).div(totalSupply());
-        _burn(msg.sender, _shares);
-
-        // Check balance
-        uint b = token.balanceOf(address(this));
-        if (b < r) {
-            uint _withdraw = r.sub(b);
-
-            Strategy(strategy).withdraw(_withdraw);
-
-            uint _after = token.balanceOf(address(this));
-            uint _diff = _after.sub(b);
-            if (_diff < _withdraw) {
-                r = b.add(_diff);
-            }
-        }
-
-        token.safeTransfer(msg.sender, r);
+        Strategy(strategy).withdraw(msg.sender, r);
     }
 
     function priceE18() public view returns (uint) {
