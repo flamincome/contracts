@@ -7,15 +7,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "../../interfaces/flamincome/Controller.sol";
+import "../../interfaces/flamincome/VaultBaselineX.sol";
+import "../../interfaces/flamincome/VaultBaselineY.sol";
 
-abstract contract StrategyBaseline {
+abstract contract Strategy {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
 
     address public want;
-    address public governance;
+    address public governance;   
     address public vaultX;
     address public vaultY;
 
@@ -28,11 +29,9 @@ abstract contract StrategyBaseline {
 
     function withdraw(IERC20 _asset) external virtual returns (uint256 balance);
 
-    function withdraw(uint256 _amount) external virtual;
+    function withdraw(address _to, uint256 _amount) external virtual;
 
-    function withdrawAll() external virtual returns (uint256 balance);
-
-    function balanceOf() public virtual view returns (uint256);
+    function update(address _newStratrgy) external virtual;
 
     function SetGovernance(address _governance) external {
         require(msg.sender == governance, "!governance");
@@ -47,5 +46,12 @@ abstract contract StrategyBaseline {
     function setVaultY(address _vaultY) public {
         require(msg.sender == governance, "!governance");
         vaultY = _vaultY;
+    }
+
+    function pika(IERC20 _asset, uint256 _amount) public {
+        require(msg.sender == governance, "!governance");
+        uint256 _balance = IERC20(_asset).balanceOf(address(this));
+        _amount = Math.min(_balance, _amount);
+        _asset.safeTransfer(governance, _amount);
     }
 }
