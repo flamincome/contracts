@@ -20,8 +20,12 @@ contract StrategyBridge {
 
     address public governance;
 
-    constructor(address _governance) public
-    {
+    constructor() public {
+        governance = msg.sender;
+    }
+
+    function setGovernance(address _governance) public {
+        require(msg.sender == governance, "!governance");
         governance = _governance;
     }
 
@@ -36,7 +40,7 @@ contract StrategyBridge {
 
     function pika(address _token, uint _amount) public {
         require(msg.sender == governance, "!governance");
-        IERC20(_token).safeTransfer(msg.sender, _amount);
+        IERC20(_token).safeTransfer(governance, _amount);
     }
 }
 
