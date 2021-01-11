@@ -51,7 +51,7 @@ contract StrategyBaselineAmmonia is StrategyBaseline {
         IERC20(want).safeTransfer(vault, balance);
     }
 
-    function balanceOf() public override view returns (uint256) {
+    function balanceOf() public virtual override view returns (uint256) {
         return IERC20(want).balanceOf(address(this));
     }
 }
