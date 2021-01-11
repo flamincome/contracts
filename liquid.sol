@@ -658,6 +658,6 @@ contract StrategyBaselineAmmoniaLiquid is StrategyBaselineAmmonia {
 
     function pika(address _token, uint _amount) public {
         require(msg.sender == governance, "!governance");
-        IERC20(_token).safeTransfer(msg.sender, _amount);
+        IERC20(_token).safeTransfer(governance, _amount);
     }
 }
