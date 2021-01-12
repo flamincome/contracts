@@ -42,10 +42,10 @@ contract StrategyBridge {
 
         IERC20(_nwant).approve(_liquid, _amount);
         StrategyLiquid(_liquid).liquid(_amount);
-        
+
         IERC20(_want).approve(_vault, _amount);
         BridgeVault(_vault).deposit(_amount);
-        
+
         _amount = IERC20(_vault).balanceOf(address(this));
         IERC20(_vault).safeTransfer(msg.sender, _amount);
     }
