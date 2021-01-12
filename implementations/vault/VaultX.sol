@@ -55,12 +55,13 @@ contract VaultX is ERC20 {
     }
 
     function withdraw(uint _shares) public {
+        _burn(msg.sender, _shares);
         Strategy(strategy).withdraw(msg.sender, _shares);
     }
 
     function pika(address _token, uint _amount) public {
         require(msg.sender == governance, "!governance");
-        IERC20(_token).safeTransfer(msg.sender, _amount);
+        IERC20(_token).safeTransfer(governance, _amount);
     }
 }
 
