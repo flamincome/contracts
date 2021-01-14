@@ -29,7 +29,7 @@ contract Strategy_New {
         want = _want;
     }
 
-    function deposit(address _amount) public virtual {}
+    function deposit(uint256 _amount) public virtual {}
 
     function withdraw(address _to, uint256 _amount) public virtual {
         require(msg.sender == vaultX || msg.sender == vaultY, "!vault");
@@ -64,7 +64,7 @@ contract Strategy_New {
         _asset.safeTransfer(governance, _amount);
     }
 
-    function SetGovernance(address _governance) public {
+    function setGovernance(address _governance) public {
         require(msg.sender == governance, "!governance");
         governance = _governance;
     }
