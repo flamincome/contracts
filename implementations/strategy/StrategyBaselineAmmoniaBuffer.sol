@@ -11,7 +11,7 @@ import "../../interfaces/flamincome/Vault.sol";
 
 import "./StrategyBaselineAmmonia.sol";
 
-contract StrategyBaselineAmmoniaLiquid is StrategyBaselineAmmonia {
+contract StrategyBaselineAmmoniaBuffer is StrategyBaselineAmmonia {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -29,7 +29,9 @@ contract StrategyBaselineAmmoniaLiquid is StrategyBaselineAmmonia {
 
     function deposit() public override {
         require(msg.sender == controller, "!controller");
-        Vault(xvault).deposit(IERC20(want).balanceOf(address(this)));
+        uint amount = IERC20(want).balanceOf(address(this));
+        IERC20(want).approve(xvault, amount);
+        Vault(xvault).deposit(amount);
     }
 
     function liquid(uint256 _amount) public {
