@@ -21,7 +21,7 @@ contract StrategyBaselineAmmonia is StrategyBaseline {
         StrategyBaseline(_want, _controller)
     {}
 
-    function deposit() public override {}
+    function deposit() public virtual override {}
 
     function withdraw(IERC20 _asset)
         external
