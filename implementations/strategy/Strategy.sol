@@ -16,7 +16,7 @@ contract Strategy_New {
     using SafeMath for uint256;
 
     address public want;
-    address public governance;   
+    address public governance;
     address public vaultX;
     address public vaultY;
 
