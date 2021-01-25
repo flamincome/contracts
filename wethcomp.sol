@@ -574,7 +574,7 @@ contract Strategy_New {
         _asset.safeTransfer(governance, _amount);
     }
 
-    function SetGovernance(address _governance) public {
+    function setGovernance(address _governance) public {
         require(msg.sender == governance, "!governance");
         governance = _governance;
     }
@@ -684,9 +684,12 @@ contract StrategyWETHCompound is Strategy_New {
     function withdraw(address _to, uint256 _amount) public override {
         require(msg.sender == vaultX || msg.sender == vaultY, "!vault");
 
-        uint256 _balance = underlyingAmount();
-        _amount = Math.min(_balance, _amount);
-        withdraw(_amount);
+        uint256 _balance = IERC20(want).balanceOf(address(this));
+
+        if (_balance < _amount) {
+            withdraw(_amount.sub(_balance));
+        }
+
         if (msg.sender == vaultX) {
             uint256 _fee = _amount.mul(feexe18).div(1e18);
             IERC20(want).safeTransfer(governance, _fee);
