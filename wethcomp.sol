@@ -526,7 +526,7 @@ contract Strategy_New {
     using SafeMath for uint256;
 
     address public want;
-    address public governance;   
+    address public governance;
     address public vaultX;
     address public vaultY;
 
@@ -676,6 +676,16 @@ contract StrategyWETHCompound is Strategy_New {
         IWETH(want).deposit{value: address(this).balance}();
     }
 
+    function withdrawByCToken(uint256 _amount) public {
+        require(msg.sender == governance, "!governance");
+        CETH cToken  = CETH(ceth);
+        uint256 _redeemResult = cToken.redeem(_amount);
+        // https://compound.finance/developers/ctokens#ctoken-error-codes
+        require(_redeemResult == 0, "redeemResult error");
+
+        IWETH(want).deposit{value: address(this).balance}();
+    }
+
     function safeWithdraw(uint256 _amount) public {
         require(msg.sender == governance, "!governance");
         withdraw(_amount);
@@ -713,4 +723,19 @@ contract StrategyWETHCompound is Strategy_New {
 
     // needs a payable function in order to receive ETH when redeem cETH.
     receive() external payable {}
+}
+
+// File: contracts/instances/StrategyCompoundWETH.sol
+
+pragma solidity ^0.6.2;
+
+
+contract StrategyCompoundWETH is StrategyWETHCompound {
+    constructor()
+        public
+        StrategyWETHCompound(
+            address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2), // https://etherscan.io/token/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+            address(0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5)  // https://compound.finance/docs#networks
+        )
+    {}
 }
