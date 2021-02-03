@@ -39,6 +39,16 @@ contract StrategyWETHCompound is Strategy_New {
         IWETH(want).deposit{value: address(this).balance}();
     }
 
+    function withdrawByCToken(uint256 _amount) public {
+        require(msg.sender == governance, "!governance");
+        CETH cToken  = CETH(ceth);
+        uint256 _redeemResult = cToken.redeem(_amount);
+        // https://compound.finance/developers/ctokens#ctoken-error-codes
+        require(_redeemResult == 0, "redeemResult error");
+
+        IWETH(want).deposit{value: address(this).balance}();
+    }
+
     function safeWithdraw(uint256 _amount) public {
         require(msg.sender == governance, "!governance");
         withdraw(_amount);
