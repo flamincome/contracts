@@ -12,7 +12,7 @@ import "../../interfaces/external/DForce.sol";
 import "../../interfaces/external/Uniswap.sol";
 
 
-contract Strategy_YFI_DForceUSDT {
+contract New_Strategy_YFI_DForceUSDT {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -35,7 +35,7 @@ contract Strategy_YFI_DForceUSDT {
     address public vaultX;
     address public vaultY;
     
-    constructor(address _controller) public {
+    constructor() public {
         governance = msg.sender;
         strategist = msg.sender;
     }
