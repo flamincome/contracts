@@ -53,8 +53,6 @@ interface Aave {
         );
 }
 
-
-
 interface AaveToken {
     function underlyingAssetAddress() external view returns (address);
 }
@@ -62,4 +60,27 @@ interface AaveToken {
 interface Oracle {
     function getAssetPrice(address reserve) external view returns (uint);
     function latestAnswer() external view returns (uint);
+}
+
+interface WETHGateway {
+    function depositETH(address onBehalfOf, uint16 referralCode) external payable;
+    function withdrawETH(uint256 amount, address to) external;
+    function getLendingPoolAddress() external view returns (address);
+}
+
+interface IATokenV2 {
+    function balanceOf(address user) external view returns (uint256);
+    function scaledBalanceOf(address user) external view returns (uint256);
+    function getScaledUserBalanceAndSupply(address user) external view returns (uint256, uint256);
+    function totalSupply() external view returns (uint256);
+    function mint(address user, uint256 amount, uint256 index) external returns (bool);
+    function burn(address user, address receiverOfUnderlying, uint256 amount, uint256 index) external;
+}
+
+interface ILendingPoolV2 {
+    function deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
+    function withdraw(address asset, uint256 amount, address to) external returns (uint256);
+    function borrow(address asset, uint256 amount, uint256 interestRateMode, uint16 referralCode, address onBehalfOf) external;
+    function repay(address asset, uint256 amount, uint256 rateMode, address onBehalfOf) external returns (uint256);
+    function getReserveNormalizedIncome(address asset) external view returns (uint256);
 }
