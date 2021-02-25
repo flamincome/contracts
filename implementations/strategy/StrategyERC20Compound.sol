@@ -32,13 +32,11 @@ contract StrategyERC20Compound is Strategy_New {
         CERC20 cToken  = CERC20(cerc20);
         uint256 _redeemResult = cToken.redeemUnderlying(_amount);
         require(_redeemResult == 0, "redeemResult error");
-
-        IWETH(want).deposit{value: address(this).balance}();
     }
 
     function withdrawByCToken(uint256 _amount) public {
         require(msg.sender == governance, "!governance");
-        CERC20 cToken = CERC20(ceth);
+        CERC20 cToken = CERC20(cerc20);
         uint256 _redeemResult = cToken.redeem(_amount);
         require(_redeemResult == 0, "redeemResult error");
     }
@@ -74,8 +72,8 @@ contract StrategyERC20Compound is Strategy_New {
     }
 
     function underlyingAmount() public view returns(uint) {
-        CETH cToken  = CETH(ceth);
-        // TODO: wbtc is 8 decimals, need to make sure the (/1e18) part is good enought
+        CERC20 cToken  = CERC20(cerc20);
+        // <del>TODO: wbtc is 8 decimals, need to make sure the (/1e18) part is good enought</del>
         return cToken.balanceOf(address(this)).mul(cToken.exchangeRateStored()).div(1e18);
     }
 }
