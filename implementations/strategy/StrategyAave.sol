@@ -16,21 +16,22 @@ contract StrategyAave is Strategy_New {
     using Address for address;
     using SafeMath for uint256;
 
-    address public aweth;
+    address public atoken;
     address public lendingpool;
 
-    constructor(address _want, address _aweth, address _lendingpool) public Strategy_New(_want) {
-        aweth = _aweth;
+    constructor(address _want, address _atoken, address _lendingpool) public Strategy_New(_want) {
+        atoken = _atoken;
         lendingpool = _lendingpool;
     }
 
     function deposit(uint256 _amount) public override {
         require(msg.sender == governance, "!governance");
-        ILendingPoolV2(lendingpool).deposit(want, _amount, msg.sender, 0);
+        IERC20(want).approve(lendingpool, _amount);
+        ILendingPoolV2(lendingpool).deposit(want, _amount, address(this), 0);
     }
 
     function withdraw(uint256 _amount) internal {
-        ILendingPoolV2(lendingpool).withdraw(want, _amount, msg.sender);
+        ILendingPoolV2(lendingpool).withdraw(want, _amount, address(this));
     }
 
     function safeWithdraw(uint256 _amount) public {
@@ -60,8 +61,8 @@ contract StrategyAave is Strategy_New {
     }
 
     function balanceOfY() public view override returns (uint256) {
-        uint awethAmount = IERC20(aweth).balanceOf(address(this));
-        return IERC20(want).balanceOf(address(this)).add(awethAmount).sub(IERC20(vaultX).totalSupply());
+        uint atokenAmount = IERC20(atoken).balanceOf(address(this));
+        return IERC20(want).balanceOf(address(this)).add(atokenAmount).sub(IERC20(vaultX).totalSupply());
     }
 
     // needs a payable function in order to receive ETH when redeem cETH.
