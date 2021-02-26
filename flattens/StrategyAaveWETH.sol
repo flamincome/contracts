@@ -34,7 +34,6 @@ library Math {
 
 // File: @openzeppelin/contracts/math/SafeMath.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -196,7 +195,6 @@ library SafeMath {
 
 // File: @openzeppelin/contracts/token/ERC20/IERC20.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -276,7 +274,6 @@ interface IERC20 {
 
 // File: @openzeppelin/contracts/utils/Address.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.2;
 
@@ -420,7 +417,6 @@ library Address {
 
 // File: @openzeppelin/contracts/token/ERC20/SafeERC20.sol
 
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.6.0;
 
@@ -497,7 +493,6 @@ library SafeERC20 {
 
 // File: contracts/interfaces/flamincome/VaultX.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 interface IVaultX {
@@ -507,7 +502,6 @@ interface IVaultX {
 
 // File: contracts/interfaces/flamincome/VaultY.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 interface IVaultY {
@@ -517,7 +511,6 @@ interface IVaultY {
 
 // File: contracts/implementations/strategy/Strategy.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 
@@ -616,7 +609,6 @@ contract Strategy_New {
 
 // File: contracts/interfaces/external/WETH.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 interface IWETH {
@@ -626,7 +618,6 @@ interface IWETH {
 
 // File: contracts/interfaces/external/Aave.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 interface IAave {
@@ -715,7 +706,6 @@ interface ILendingPoolV2 {
 
 // File: contracts/implementations/strategy/StrategyAave.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 
@@ -786,7 +776,6 @@ contract StrategyAave is Strategy_New {
 
 // File: contracts/instances/StrategyAaveWETH.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
 
