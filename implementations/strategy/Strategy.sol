@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../../interfaces/flamincome/VaultX.sol";
 import "../../interfaces/flamincome/VaultY.sol";
 
-contract Strategy_New {
+contract Strategy {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
