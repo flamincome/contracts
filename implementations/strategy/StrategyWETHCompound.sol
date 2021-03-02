@@ -11,27 +11,36 @@ import "./Strategy.sol";
 import "../../interfaces/external/WETH.sol";
 import "../../interfaces/external/Compound.sol";
 
-contract StrategyWETHCompound is Strategy_New {
+contract StrategyWETHCompound is Strategy {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
 
     address public ceth;
 
-    constructor(address _want, address _ceth) public Strategy_New(_want) {
+    constructor(address _want, address _ceth) public Strategy(_want) {
         ceth = _ceth;
     }
 
-    function deposit(uint256 _amount) public override {
+    function update(address _newStratrgy) public override {
         require(msg.sender == governance, "!governance");
-        // WETH => ETH
-        IWETH(want).withdraw(_amount);
-        CETH cToken = CETH(ceth);
-        cToken.mint{value: _amount}();
+        withdraw(1e18); // withdraw 100%
+        uint256 _balance = IERC20(want).balanceOf(address(this));
+        IERC20(want).safeTransfer(_newStratrgy, _balance);
+        IVaultX(vaultX).setStrategy(_newStratrgy);
+        IVaultY(vaultY).setStrategy(_newStratrgy);
     }
 
-    function withdraw(uint256 _amount) internal {
-        CETH cToken  = CETH(ceth);
+    function deposit(uint256 _ne18) public override {
+        require(msg.sender == governance, "!governance");
+        uint256 _amount = IERC20(want).balanceOf(address(this));
+        IWETH(want).withdraw(_amount.mul(_ne18).div(1e18));
+        CETH cToken = CETH(ceth);
+        cToken.mint{value: address(this).balance}();
+    }
+
+    function withdrawByAmount(uint256 _amount) internal {
+        CETH cToken = CETH(ceth);
         uint256 _redeemResult = cToken.redeemUnderlying(_amount);
         // https://compound.finance/developers/ctokens#ctoken-error-codes
         require(_redeemResult == 0, "redeemResult error");
@@ -39,9 +48,10 @@ contract StrategyWETHCompound is Strategy_New {
         IWETH(want).deposit{value: address(this).balance}();
     }
 
-    function withdrawByCToken(uint256 _amount) public {
+    function withdraw(uint256 _ne18) public {
         require(msg.sender == governance, "!governance");
-        CETH cToken  = CETH(ceth);
+        CETH cToken = CETH(ceth);
+        uint256 _amount = cToken.balanceOf(address(this)).mul(_ne18).div(1e18);
         uint256 _redeemResult = cToken.redeem(_amount);
         // https://compound.finance/developers/ctokens#ctoken-error-codes
         require(_redeemResult == 0, "redeemResult error");
@@ -51,7 +61,7 @@ contract StrategyWETHCompound is Strategy_New {
 
     function safeWithdraw(uint256 _amount) public {
         require(msg.sender == governance, "!governance");
-        withdraw(_amount);
+        withdrawByAmount(_amount);
     }
 
     function withdraw(address _to, uint256 _amount) public override {
@@ -60,7 +70,8 @@ contract StrategyWETHCompound is Strategy_New {
         uint256 _balance = IERC20(want).balanceOf(address(this));
 
         if (_balance < _amount) {
-            withdraw(_amount.sub(_balance));
+            withdrawByAmount(_amount.sub(_balance));
+            _amount = Math.min(IERC20(want).balanceOf(address(this)), _amount);
         }
 
         if (msg.sender == vaultX) {
@@ -76,12 +87,9 @@ contract StrategyWETHCompound is Strategy_New {
     }
 
     function balanceOfY() public view override returns (uint256) {
-        return IERC20(want).balanceOf(address(this)).add(underlyingAmount()).sub(IERC20(vaultX).totalSupply());
-    }
-
-    function underlyingAmount() public view returns(uint) {
-        CETH cToken  = CETH(ceth);
-        return cToken.balanceOf(address(this)).mul(cToken.exchangeRateStored()).div(1e18);
+        CETH cToken = CETH(ceth);
+        uint256 underlyingAmount = cToken.balanceOf(address(this)).mul(cToken.exchangeRateStored()).div(1e18);
+        return underlyingAmount.add(IERC20(want).balanceOf(address(this))).sub(IERC20(vaultX).totalSupply());
     }
 
     // needs a payable function in order to receive ETH when redeem cETH.

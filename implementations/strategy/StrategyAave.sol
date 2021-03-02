@@ -11,7 +11,7 @@ import "./Strategy.sol";
 import "../../interfaces/external/WETH.sol";
 import "../../interfaces/external/Aave.sol";
 
-contract StrategyAave is Strategy_New {
+contract StrategyAave is Strategy {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
@@ -19,24 +19,40 @@ contract StrategyAave is Strategy_New {
     address public atoken;
     address public lendingpool;
 
-    constructor(address _want, address _atoken, address _lendingpool) public Strategy_New(_want) {
+    constructor(address _want, address _atoken, address _lendingpool) public Strategy(_want) {
         atoken = _atoken;
         lendingpool = _lendingpool;
     }
 
-    function deposit(uint256 _amount) public override {
+    function update(address _newStratrgy) public override {
         require(msg.sender == governance, "!governance");
+        withdraw(1e18); // withdraw 100%
+        uint256 _balance = IERC20(want).balanceOf(address(this));
+        IERC20(want).safeTransfer(_newStratrgy, _balance);
+        IVaultX(vaultX).setStrategy(_newStratrgy);
+        IVaultY(vaultY).setStrategy(_newStratrgy);
+    }
+
+    function deposit(uint256 _ne18) public override {
+        require(msg.sender == governance, "!governance");
+        uint256 _amount = IERC20(want).balanceOf(address(this)).mul(_ne18).div(1e18);
         IERC20(want).approve(lendingpool, _amount);
         ILendingPoolV2(lendingpool).deposit(want, _amount, address(this), 0);
     }
 
-    function withdraw(uint256 _amount) internal {
+    function withdrawByAmount(uint256 _amount) internal {
+        ILendingPoolV2(lendingpool).withdraw(want, _amount, address(this));
+    }
+
+    function withdraw(uint256 _ne18) public {
+        require(msg.sender == governance, "!governance");
+        uint256 _amount = IERC20(atoken).balanceOf(address(this)).mul(_ne18).div(1e18);
         ILendingPoolV2(lendingpool).withdraw(want, _amount, address(this));
     }
 
     function safeWithdraw(uint256 _amount) public {
         require(msg.sender == governance, "!governance");
-        withdraw(_amount);
+        withdrawByAmount(_amount);
     }
 
     function withdraw(address _to, uint256 _amount) public override {
@@ -45,7 +61,8 @@ contract StrategyAave is Strategy_New {
         uint256 _balance = IERC20(want).balanceOf(address(this));
 
         if (_balance < _amount) {
-            withdraw(_amount.sub(_balance));
+            withdrawByAmount(_amount.sub(_balance));
+            _amount = Math.min(IERC20(want).balanceOf(address(this)), _amount);
         }
 
         if (msg.sender == vaultX) {
