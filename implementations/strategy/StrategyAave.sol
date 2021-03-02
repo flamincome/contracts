@@ -36,6 +36,7 @@ contract StrategyAave is Strategy {
     function deposit(uint256 _ne18) public override {
         require(msg.sender == governance, "!governance");
         uint256 _amount = IERC20(want).balanceOf(address(this)).mul(_ne18).div(1e18);
+        IERC20(want).approve(lendingpool, 0);
         IERC20(want).approve(lendingpool, _amount);
         ILendingPoolV2(lendingpool).deposit(want, _amount, address(this), 0);
     }

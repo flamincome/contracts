@@ -33,6 +33,7 @@ contract StrategyERC20Compound is Strategy {
     function deposit(uint256 _ne18) public override {
         require(msg.sender == governance, "!governance");
         uint256 _amount = IERC20(want).balanceOf(address(this)).mul(_ne18).div(1e18);
+        IERC20(want).approve(cerc20, 0);
         IERC20(want).approve(cerc20, _amount);
         CERC20 cToken = CERC20(cerc20);
         cToken.mint(_amount);
