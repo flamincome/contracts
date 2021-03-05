@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./Strategy.sol";
+import "../../interfaces/external/Uniswap.sol";
 import "../../interfaces/external/Compound.sol";
 
 contract StrategyERC20Compound is Strategy {
@@ -16,9 +17,41 @@ contract StrategyERC20Compound is Strategy {
     using SafeMath for uint256;
 
     address public cerc20;
+    address public comptroller;
+    address public compToken;
+    address public uniswapRouterV2;
+    address public constant weth = address(
+        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+    );
 
-    constructor(address _want, address _cerc20) public Strategy(_want) {
+    constructor(address _want, address _cerc20, address _comptroller, address _compToken, address _uniswapRouterV2) public Strategy(_want) {
         cerc20 = _cerc20;
+        comptroller = _comptroller;
+        compToken = _compToken;
+        uniswapRouterV2 = _uniswapRouterV2;
+    }
+
+    function doHardWork() public {
+        require(msg.sender == governance, "!governance");
+        // claim comp reward
+        Comptroller(comptroller).claimComp(address(this));
+        // sell comp -> want
+        uint256 compBalance = IERC20(compToken).balanceOf(address(this));
+        if (compBalance > 0) {
+            IERC20(compToken).safeApprove(uniswapRouterV2, 0);
+            IERC20(compToken).safeApprove(uniswapRouterV2, compBalance);
+            address[] memory path = new address[](3);
+            path[0] = compToken;
+            path[1] = weth;
+            path[2] = want;
+            IUniswapV2Router02(uniswapRouterV2).swapExactTokensForTokens(
+                compBalance,
+                0,
+                path,
+                address(this),
+                block.timestamp
+            );
+        }
     }
 
     function update(address _newStratrgy) public override {
