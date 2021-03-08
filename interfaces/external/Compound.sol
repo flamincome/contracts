@@ -16,3 +16,7 @@ interface CERC20 {
     function balanceOf(address _owner) external view returns (uint256);
     function exchangeRateStored() external view returns (uint256);
 }
+
+interface Comptroller {
+    function claimComp(address holder) external;
+}
