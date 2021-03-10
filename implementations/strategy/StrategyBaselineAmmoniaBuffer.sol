@@ -30,7 +30,7 @@ contract StrategyBaselineAmmoniaBuffer is StrategyBaselineAmmonia {
     function deposit() public override {
         require(msg.sender == controller, "!controller");
         uint amount = IERC20(want).balanceOf(address(this));
-        IERC20(want).approve(xvault, amount);
+        IERC20(want).safeApprove(xvault, amount);
         Vault(xvault).deposit(amount);
     }
 
