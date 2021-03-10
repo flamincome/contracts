@@ -741,8 +741,8 @@ contract StrategyAave is Strategy {
     function deposit(uint256 _ne18) public override {
         require(msg.sender == governance, "!governance");
         uint256 _amount = IERC20(want).balanceOf(address(this)).mul(_ne18).div(1e18);
-        IERC20(want).approve(lendingpool, 0);
-        IERC20(want).approve(lendingpool, _amount);
+        IERC20(want).safeApprove(lendingpool, 0);
+        IERC20(want).safeApprove(lendingpool, _amount);
         ILendingPoolV2(lendingpool).deposit(want, _amount, address(this), 0);
     }
 
@@ -753,7 +753,9 @@ contract StrategyAave is Strategy {
     function withdraw(uint256 _ne18) public {
         require(msg.sender == governance, "!governance");
         uint256 _amount = IERC20(atoken).balanceOf(address(this)).mul(_ne18).div(1e18);
-        ILendingPoolV2(lendingpool).withdraw(want, _amount, address(this));
+        if (_amount > 0) {
+            ILendingPoolV2(lendingpool).withdraw(want, _amount, address(this));
+        }
     }
 
     function safeWithdraw(uint256 _amount) public {
