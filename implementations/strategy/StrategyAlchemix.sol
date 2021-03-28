@@ -49,7 +49,7 @@ contract StrategyAlchemix is Strategy, Ownable {
             uint256(0),
             uint256(0),
             uint256(0),
-            uint256(usdtIndexInCrvMetapool)
+            uint256(_amount)
         ];
         metaCurvePools.add_liquidity(alcx3CrvCurvePool, amountsToAdd, uint256(0)); // Vulnerable to sandwich attacks but only strategist and governnace can call this so no flash loans attacks + it's stableswap
         uint256 crvAmount = IERC20(alcx3CrvCurvePool).balanceOf(address(this));
