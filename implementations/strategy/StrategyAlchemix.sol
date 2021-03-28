@@ -6,18 +6,20 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Strategy.sol";
-import "../../interfaces/external/WETH.sol";
 import "../../interfaces/external/AlcxStakingPools.sol";
 import "../../interfaces/external/MetaCurvePools.sol";
+import "../../interfaces/external/Uniswap.sol";
 
-contract StrategyAave is Strategy {
+// owner == harvester
+contract StrategyAlchemix is Strategy, Ownable {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
 
-    address constant public alcx = 0xdbdb4d16eda451d0503b854cf79d55697f90c8df;
+    address constant public alcx = 0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF;
     address constant public sushiRouter = 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F;
     address constant public weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // used for alcx <> weth <> usdt route
     StakingPools public alcxStakingPools = StakingPools(0xAB8e74017a8Cc7c15FFcCd726603790d26d7DeCa);
@@ -25,7 +27,6 @@ contract StrategyAave is Strategy {
     MetaCurvePools public metaCurvePools = MetaCurvePools(0xA79828DF1850E8a3A3064576f380D90aECDD3359);
     uint256 constant public alcxCrvPoolId = 4;
     int128 constant public usdtIndexInCrvMetapool = 3;
-
 
     constructor(address _want) public Strategy(_want) {
     }
@@ -40,15 +41,16 @@ contract StrategyAave is Strategy {
     }
 
     function deposit(uint256 _ne18) public override {
-        require(msg.sender == strategist || msg.sender == governance, "!authorized");
+        require(msg.sender == owner() || msg.sender == governance, "!authorized");
         uint256 _amount = IERC20(want).balanceOf(address(this)).mul(_ne18).div(1e18);
         IERC20(want).safeApprove(address(metaCurvePools), 0);
         IERC20(want).safeApprove(address(metaCurvePools), _amount);
-        uint256[] memory amountsToAdd = new uint256[](4);
-            amountsToAdd[0] = 0;
-            amountsToAdd[1] = 0;
-            amountsToAdd[2] = 0;
-            amountsToAdd[2] = _amount;
+        uint256[4] memory amountsToAdd = [
+            uint256(0),
+            uint256(0),
+            uint256(0),
+            uint256(usdtIndexInCrvMetapool)
+        ];
         metaCurvePools.add_liquidity(alcx3CrvCurvePool, amountsToAdd, uint256(0)); // Vulnerable to sandwich attacks but only strategist and governnace can call this so no flash loans attacks + it's stableswap
         uint256 crvAmount = IERC20(alcx3CrvCurvePool).balanceOf(address(this));
         IERC20(alcx3CrvCurvePool).safeApprove(address(alcxStakingPools), 0);
@@ -64,7 +66,7 @@ contract StrategyAave is Strategy {
     }
 
     function harvest(uint minimumReceived) public { // Avoids sandwich attacks
-        require(msg.sender == strategist || msg.sender == governance, "!authorized");
+        require(msg.sender == owner() || msg.sender == governance, "!authorized");
         alcxStakingPools.claim(alcxCrvPoolId);
         uint alcxBalance = IERC20(alcx).balanceOf(address(this));
         uint prevWantBalance = IERC20(want).balanceOf(address(this));
