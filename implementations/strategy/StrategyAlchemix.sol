@@ -28,8 +28,7 @@ contract StrategyAlchemix is Strategy, Ownable {
     uint256 constant public alcxCrvPoolId = 4;
     int128 constant public usdtIndexInCrvMetapool = 3;
 
-    constructor(address _want) public Strategy(_want) {
-    }
+    constructor(address _want) public Strategy(_want) {}
 
     function update(address _newStratrgy) public override {
         require(msg.sender == governance, "!governance");
@@ -58,11 +57,12 @@ contract StrategyAlchemix is Strategy, Ownable {
         alcxStakingPools.deposit(alcxCrvPoolId, crvAmount);
     }
 
-    function withdrawByAmount(uint256 _amount) internal {
-        alcxStakingPools.withdraw(alcxCrvPoolId, _amount);
+    function withdrawByAmount(uint256 wantAmount) internal {
+        uint256 lpAmount = wantAmount.mul(1e18).div(ICurveFi(alcx3CrvCurvePool).get_virtual_price());
+        alcxStakingPools.withdraw(alcxCrvPoolId, lpAmount);
         IERC20(alcx3CrvCurvePool).safeApprove(address(metaCurvePools), 0);
-        IERC20(alcx3CrvCurvePool).safeApprove(address(metaCurvePools), _amount);
-        metaCurvePools.remove_liquidity_one_coin(address(alcx3CrvCurvePool), _amount, usdtIndexInCrvMetapool, 0);
+        IERC20(alcx3CrvCurvePool).safeApprove(address(metaCurvePools), lpAmount);
+        metaCurvePools.remove_liquidity_one_coin(address(alcx3CrvCurvePool), lpAmount, usdtIndexInCrvMetapool, wantAmount);
     }
 
     function harvest(uint minimumReceived) public { // Avoids sandwich attacks
@@ -124,11 +124,10 @@ contract StrategyAlchemix is Strategy, Ownable {
 
     function balanceOfY() public view override returns (uint256) {
         uint stakedCrv = alcxStakingPools.getStakeTotalDeposited(address(this), alcxCrvPoolId);
-        uint balanceInCrv = metaCurvePools.calc_withdraw_one_coin(address(alcx3CrvCurvePool), stakedCrv, usdtIndexInCrvMetapool);
+        uint balanceInCrv = ICurveFi(alcx3CrvCurvePool).get_virtual_price().mul(stakedCrv).div(1e18);
         return IERC20(want).balanceOf(address(this)).add(balanceInCrv).sub(IERC20(vaultX).totalSupply());
     }
 
     // needs a payable function in order to receive ETH when redeem cETH.
     receive() external payable {}
 }
-
