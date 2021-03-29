@@ -8,13 +8,22 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-interface UniRouter {
-    function swapExactTokensForTokens(uint, uint, address[] calldata, address, uint) external;
-    function getAmountsOut(uint, address[] calldata) external returns (uint[] memory);
+interface UNI {
+    function swapExactTokensForTokens(
+        uint256,
+        uint256,
+        address[] calldata,
+        address,
+        uint256
+    ) external;
+
+    function getAmountsOut(uint256, address[] calldata)
+        external
+        returns (uint256[] memory);
 }
 
-interface ICurveFi {
-  function get_virtual_price() external view returns (uint);
+interface CRV {
+    function get_virtual_price() external view returns (uint256);
 }
 
 interface ILP {
@@ -114,96 +123,63 @@ contract Impl_USDT_AaveV2_Alcx {
     address public constant alcx = 0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF;
     address public constant ilp = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9;
     address public constant mcp = 0xA79828DF1850E8a3A3064576f380D90aECDD3359;
-    address public constant bcp = 0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c; // alUSD <> 3CRV pool
+    address public constant bcp = 0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c;
     address public constant asp = 0xAB8e74017a8Cc7c15FFcCd726603790d26d7DeCa;
-    address constant public sushiRouter = 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F;
-    address constant public weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // used for alcx <> weth <> usdt route
+    address public constant sushi = 0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F;
+    address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     uint256 public constant pid = 4;
     uint256 public constant DENOMINATOR = 10000;
 
     function dohardwork(bytes memory _data) public {
-        uint256 _ne18 = abi.decode(_data, (uint256));
-        if (_ne18 == 0) {
-            // CLAIM ALCX
-            ASP(asp).claim(pid);
-        } else if (_ne18 <= 1e18) {
-            // DEPOSIT TO ALCX
-            uint256 _amt = IERC20(token).balanceOf(address(this));
-            _amt = _amt.mul(_ne18).div(1e18);
-            IERC20(token).safeApprove(mcp, 0);
-            IERC20(token).safeApprove(mcp, _amt);
-            uint256[4] memory _deposit_amounts = [0, 0, 0, _amt];
-            MCP(mcp).add_liquidity(bcp, _deposit_amounts, 0); // FIX THE LAST 0 for anti-sandwich
-            _amt = IERC20(bcp).balanceOf(address(this));
-            IERC20(bcp).safeApprove(asp, 0);
-            IERC20(bcp).safeApprove(asp, _amt);
-            ASP(asp).deposit(pid, _amt);
-        } else if (_ne18 <= 2e18) {
-            // WITHDRAW TO ONE COIN FROM ALCX
-            _ne18 = _ne18.sub(1e18);
-            uint256 _amt = ASP(asp).getStakeTotalDeposited(address(this), pid);
-            uint slip = _ne18.div(1e15); // First 3 bits -> slip
-            uint percentWithdraw = _ne18.mod(1e15); // Next 14 bits -> amount to withdraw
-            _amt = _amt.mul(percentWithdraw).div(1e15);
-            ASP(asp).withdraw(pid, _amt);
-            IERC20(bcp).safeApprove(mcp, 0);
-            IERC20(bcp).safeApprove(mcp, _amt);
-            MCP(mcp).remove_liquidity_one_coin(bcp, _amt, 3, _amnt.mul(DENOMINATOR.sub(slip)).div(DENOMINATOR));
-        } else if (_ne18 <= 3e18) {
-            // WITHDRAW TO MULTI COINS FROM ALCX
-            _ne18 = _ne18.sub(2e18);
-            uint256 _amt = ASP(asp).getStakeTotalDeposited(address(this), pid);
-            _amt = _amt.mul(_ne18).div(1e18);
-            ASP(asp).withdraw(pid, _amt);
-            IERC20(bcp).safeApprove(mcp, 0);
-            IERC20(bcp).safeApprove(mcp, _amt);
-            uint256[4] memory minAmounts = [
-                uint256(0),
-                uint256(0),
-                uint256(0),
-                uint256(0)
-            ];
-            MCP(mcp).remove_liquidity(bcp, _amt, minAmounts);
-        } else if (_ne18 <= 4e18) {
-            // TRADE ALCX ON SUSHI
-            _ne18 = _ne18.sub(3e18);
-            uint minimumReceived = _ne18.mul(1e6);
-            uint256 alcxBalance = IERC20(alcx).balanceOf(address(this));
-            IERC20(alcx).safeApprove(sushiRouter, 0);
-            IERC20(alcx).safeApprove(sushiRouter, alcxBalance);
-
-            address[] memory path = new address[](3);
-            path[0] = alcx;
-            path[1] = weth;
-            path[2] = token;
-
-            UniRouter(sushiRouter).swapExactTokensForTokens(
-                alcxBalance,
-                minimumReceived,
-                path,
-                address(this),
-                block.timestamp.add(1800)
-            );
-        } else if (_ne18 <= 5e18) {
-            // TRADE ALCX WITH STRATEGIST
-            _ne18 = _ne18.sub(3e18);
-            uint amountReceived = _ne18.mul(1e6);
-            uint256 alcxBalance = IERC20(alcx).balanceOf(address(this));
-            address[] memory path = new address[](3);
-            path[0] = alcx;
-            path[1] = weth;
-            path[2] = token;
-            uint receivedFromSushi = UniRouter(sushiRouter).getAmountsOut(alcxBalance, path)[2];
-            require(receivedFromSushi < amountReceived, "sushi is better");
-            IERC20(token).safeTransferFrom(tx.origin, address(this), amountReceived);
-            IERC20(alcx).safeTransfer(tx.origin, alcxBalance);
-        } else if (_ne18 <= 6e18) {
-            // TRADE UNDERLYING USD WITH STRATEGIST
-
+        uint256[] memory _ne18s = abi.decode(_data, (uint256[]));
+        for (uint256 _i = 0; _i < _ne18s.length; _i++) {
+            deposit(_ne18s[_i]);
         }
     }
 
     function deposit(uint256 _ne18) public {
+        if (_ne18 == 0) {
+            ASP(asp).claim(pid);
+            return;
+        }
+        if (_ne18 <= 1e18) {
+            work_deposit_to_aave(_ne18);
+            return;
+        }
+        if (_ne18 <= 2e18) {
+            work_withdraw_from_aave(_ne18.sub(1e18));
+            return;
+        }
+        if (_ne18 <= 3e18) {
+            work_deposit_to_alcx(_ne18.sub(2e18));
+            return;
+        }
+        if (_ne18 <= 4e18) {
+            work_withdraw_from_alcx(_ne18.sub(3e18));
+            return;
+        }
+        if (_ne18 <= 5e18) {
+            work_trade_alcx_on_sushi(_ne18.sub(4e18));
+            return;
+        }
+        if (_ne18 <= 6e18) {
+            work_trade_alcx_with_strategist(_ne18.sub(5e18));
+            return;
+        }
+    }
+
+    function withdraw(uint256 _ne18) public {
+        work_withdraw_from_aave(_ne18);
+    }
+
+    function deposited() public view returns (uint256) {
+        uint256 _amt = ASP(asp).getStakeTotalDeposited(address(this), pid);
+        _amt = CRV(bcp).get_virtual_price().mul(_amt).div(1e18);
+        _amt = IERC20(atoken).balanceOf(address(this)).add(_amt);
+        return _amt;
+    }
+
+    function work_deposit_to_aave(uint256 _ne18) internal {
         uint256 _amt = IERC20(token).balanceOf(address(this));
         _amt = _amt.mul(_ne18).div(1e18);
         if (_amt == 0) {
@@ -214,22 +190,59 @@ contract Impl_USDT_AaveV2_Alcx {
         ILP(ilp).deposit(token, _amt, address(this), 0);
     }
 
-    function withdraw(uint256 _ne18) public {
+    function work_withdraw_from_aave(uint256 _ne18) internal {
         uint256 _amt = IERC20(atoken).balanceOf(address(this));
         _amt = _amt.mul(_ne18).div(1e18);
         if (_amt == 0) {
             return;
         }
         ILP(ilp).withdraw(token, _amt, address(this));
-        // TODO: SHOULD WE WITHDRAW FROM ALCX WHEN THERE IS NO ENOUGH USDT IN AAVE
-        // TODO: OR AN ADDTIONAL SLIPPAGE LIMIT SHOULD BE ADDED TO PROTECT USERS
-        // Let's not allow withdrawals from users on curve?
     }
 
-    function deposited() public view returns (uint256) {
+    function work_deposit_to_alcx(uint256 _ne18) internal {
+        uint256 _amt = IERC20(token).balanceOf(address(this));
+        _amt = _amt.mul(_ne18).div(1e18);
+        IERC20(token).safeApprove(mcp, 0);
+        IERC20(token).safeApprove(mcp, _amt);
+        uint256[4] memory _deposit_amounts = [0, 0, 0, _amt];
+        MCP(mcp).add_liquidity(bcp, _deposit_amounts, 0);
+        _amt = IERC20(bcp).balanceOf(address(this));
+        IERC20(bcp).safeApprove(asp, 0);
+        IERC20(bcp).safeApprove(asp, _amt);
+        ASP(asp).deposit(pid, _amt);
+    }
+
+    function work_withdraw_from_alcx(uint256 _ne18) internal {
         uint256 _amt = ASP(asp).getStakeTotalDeposited(address(this), pid);
-        _amt = _amt.mul(ICurveFi(bcp).get_virtual_price()).div(1e18); // Maybe this is wrong, since this is a metapool we might have to get the price of the metapool and then the price of 3crv
-        _amt = IERC20(atoken).balanceOf(address(this)).add(_amt);
-        return _amt;
+        _amt = _amt.mul(_ne18).div(1e18);
+        ASP(asp).withdraw(pid, _amt);
+        IERC20(bcp).safeApprove(mcp, 0);
+        IERC20(bcp).safeApprove(mcp, _amt);
+        MCP(mcp).remove_liquidity_one_coin(bcp, _amt, 3, 0);
+    }
+
+    function work_trade_alcx_on_sushi(uint256 _ne18) internal {
+        uint256 _amt = IERC20(alcx).balanceOf(address(this));
+        _amt = _amt.mul(_ne18).div(1e18);
+        IERC20(alcx).safeApprove(sushi, 0);
+        IERC20(alcx).safeApprove(sushi, _amt);
+        address[] memory _p = new address[](3);
+        _p[0] = alcx;
+        _p[1] = weth;
+        _p[2] = token;
+        uint256 _t = block.timestamp.add(1800);
+        UNI(sushi).swapExactTokensForTokens(_amt, 0, _p, address(this), _t);
+    }
+
+    function work_trade_alcx_with_strategist(uint256 _ne18) internal {
+        uint256 _amt = IERC20(alcx).balanceOf(address(this));
+        _amt = _amt.mul(_ne18).div(1e18);
+        address[] memory _p = new address[](3);
+        _p[0] = alcx;
+        _p[1] = weth;
+        _p[2] = token;
+        uint256 _recv = UNI(sushi).getAmountsOut(_amt, _p)[2];
+        IERC20(token).safeTransferFrom(tx.origin, address(this), _recv);
+        IERC20(alcx).safeTransfer(tx.origin, _amt);
     }
 }
