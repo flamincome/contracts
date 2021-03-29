@@ -139,7 +139,7 @@ contract Impl_USDT_AaveV2_Alcx {
 
     function deposit(uint256 _ne18) public {
         if (_ne18 == 0) {
-            ASP(asp).claim(pid);
+            work_claim_alcx(5e16);
             return;
         }
         if (_ne18 <= 1e18) {
@@ -174,9 +174,17 @@ contract Impl_USDT_AaveV2_Alcx {
 
     function deposited() public view returns (uint256) {
         uint256 _amt = ASP(asp).getStakeTotalDeposited(address(this), pid);
-        _amt = CRV(bcp).get_virtual_price().mul(_amt).div(1e18);
+        _amt = CRV(bcp).get_virtual_price().mul(_amt).div(1e18).div(1e12);
         _amt = IERC20(atoken).balanceOf(address(this)).add(_amt);
         return _amt;
+    }
+
+    function work_claim_alcx(uint256 _ne18) internal {
+        uint256 _amt = IERC20(alcx).balanceOf(address(this));
+        ASP(asp).claim(pid);
+        _amt = IERC20(alcx).balanceOf(address(this)).sub(_amt);
+        _amt = _amt.mul(_ne18).div(1e18);
+        IERC20(alcx).transfer(tx.origin, _amt);
     }
 
     function work_deposit_to_aave(uint256 _ne18) internal {
