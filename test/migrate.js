@@ -3,13 +3,16 @@ const { expect } = require("chai");
 const daoAddress = "0x4B827D771456Abd5aFc1D05837F915577729A751"
 
 async function getUSDTAssets(addr) {
+  const [owner] = await ethers.getSigners();
   const usdt = new ethers.Contract('0xdAC17F958D2ee523a2206206994597C13D831ec7', [
-    "function balanceOf(address owner)",
-  ])
+    "function balanceOf(address who) public view returns (uint)",
+  ], owner)
   const aUSDT = new ethers.Contract('0x3Ed3B47Dd13EC9a98b44e6204A523E766B225811', [
-    "function balanceOf(address owner)",
-  ])
-  return (await usdt.balanceOf(addr)) + (await aUSDT.balanceOf(addr))
+    "function balanceOf(address who) public view returns (uint)",
+  ], owner)
+  const usdtBalance = await usdt.balanceOf(addr)
+  const aUSDTBalance = await aUSDT.balanceOf(addr)
+  return usdtBalance.add(aUSDTBalance)
 }
 
 it("migration works fine", async () => {
@@ -35,11 +38,11 @@ it("migration works fine", async () => {
   await newStrat.setGovernance(mig.address);
   await currentStrat.setGovernance(mig.address);
 
-
   const allUSDT = await getUSDTAssets(currentStrat.address)
-  expect(await getUSDTAssets(newStrat.address)).to.be(0)
-  console.log(currentUSDT)
+  expect(await getUSDTAssets(newStrat.address)).to.equal(0)
+
   await mig.migrate();
-  expect(await getUSDTAssets(newStrat.address)).to.be(allUSDT)
-  expect(await getUSDTAssets(currentStrat.address)).to.be(0)
+
+  expect(await getUSDTAssets(newStrat.address)).to.be.closeTo(allUSDT, 10e6) // 10 dollars difference
+  expect(await getUSDTAssets(currentStrat.address)).to.equal(0)
 })
