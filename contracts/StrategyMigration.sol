@@ -46,4 +46,12 @@ contract MigrateStrat {
         currentStrategy.setGovernance(dao);
         NewStrat(nextStrategy).setGovernance(dao);
     }
+
+    function returnGovernanceOldStrat() public {
+        currentStrategy.setGovernance(dao);
+    }
+
+    function returnGovernanceNewStrat() public {
+        NewStrat(nextStrategy).setGovernance(dao);
+    }
 }
